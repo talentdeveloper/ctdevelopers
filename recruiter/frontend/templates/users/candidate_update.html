@@ -1,0 +1,359 @@
+{% extends "base_v2.html" %}
+
+{% load staticfiles i18n humanize widget_tweaks %}
+
+{% block messages %}{% endblock messages %}
+
+{% block content %}
+<!-- Start First Visit Page -->
+<section class="first-visit">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-12">
+                <h3 class="first-visit__title">
+                    {% if not user.profile.is_initial_profile_complete %}
+                        {% trans "Please add your profile picture, job title and location to proceed." %}
+                    {% endif %}
+                </h3>
+                <h3>{{ form.non_field_errors }}</h3>
+            </div>
+        </div>
+    </div>
+    <div class="container container-expand">
+        <form action="{% url 'users:profile_update' %}" method="POST">
+            {% csrf_token %}
+            <div class="row">
+                <div class="col-lg-6">
+                    <div class="first-visit__panel left">
+                        <div class="row">
+                            <div class="col-mg-12 col-lg-5 overflow-hidden first-visit__avatar-block">
+                                <div class="first-visit__img-block">
+                                    <img src="{{ user.get_photo_url }}" alt="img" class="first-visit__user-photo img-responsive profile-photo">
+                                    <button type="button" id="photo_upload_btn">
+                                        <img src="{% static "img/pencil-edit-button.png" %}" alt="img">
+                                    </button>
+                                </div>
+                                <div class="first-visit__user-title">
+                                    <h1>
+                                        {{ user.get_full_name }}
+                                    </h1>
+                                </div>
+                                <div class="first-visit__cv">
+                                    <div class="text-center">
+                                        {% if user.profile.cv %}
+                                            <a href="{{ user.profile.cv.url }}" class="cv-link">{% trans "Download CV" %}</a>
+                                        {% endif %}
+                                    </div>
+                                    <button type="button" id="cv-upload-btn">
+                                        {% trans "Update CV" %} <img src="{% static "img/user-cv.png" %}" alt="img">
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="col-md-12 col-lg-7">
+                                <div class="first-visit__info">
+                                    <h3>
+                                        {% trans "Online" %} {{ user.last_seen|naturaltime }}
+                                    </h3>
+                                    <div class="group">
+                                        {{ form.title|attr:"placeholder:Job Title" }}
+                                        {{ form.title.errors }}
+
+                                        {{ form.experience|attr:"placeholder:Experience (Full Years)" }}
+                                        {{ form.experience.errors }}
+                                    </div>
+                                    <div class="first-visit__core-skills">
+                                        {{ form.candidate_skill_formset.management_form }}
+                                        <h3>
+                                            {% trans "Core Skills" %}
+                                        </h3>
+                                        {{ form.candidate_skill_formset.non_field_errors }}
+                                        <div class="group">
+                                            <ul class="core-skill-fields">
+                                                {% for form in form.candidate_skill_formset %}
+                                                    <li>
+                                                        {{ form.skill.errors }}
+                                                        {{ form.experience.errors }}
+
+                                                        {{ form.skill }}
+                                                        <select name="form-{{ forloop.counter0 }}-experience" id="id_form-{{ forloop.counter0 }}-experience">
+                                                            <option value="8">
+                                                                8 Years
+                                                            </option>
+                                                            <option value="5">
+                                                                5 Years
+                                                            </option>
+                                                            <option value="1">
+                                                                1 Year
+                                                            </option>
+                                                        </select>
+                                                    </li>
+                                                {% endfor %}
+                                                <li>
+                                                    <button type="button" class="btn-add-skill">+</button>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="first-visit__panel right">
+                        <div class="first-visit__user-info">
+                            <div class="row">
+                                <div class="col-lg-6">
+                                    <div class="first-visit__item">
+                                        {{ form.status.label_tag }}
+                                        {{ form.status }}
+                                        {{ form.status.errors }}
+                                    </div>
+                                </div>
+                                <div class="col-lg-6">
+                                    <div class="first-visit__item in-contract-status-field {% if profile_candidate_form.status.value != user.profile.STATUS_IN_CONTRACT %}hidden{% endif %}">
+                                        {{ form.in_contract_status.label_tag }}
+                                        {{ form.in_contract_status }}
+                                        {{ form.in_contract_status.errors }}
+                                    </div>
+                                </div>
+                                <div class="col-lg-6 {% if profile_candidate_form.status.value != user.profile.STATUS_OUT_OF_CONTRACT %}hidden{% endif %}">
+                                    <div class="first-visit__item out-contract-status-field">
+                                        {{ form.out_contract_status.label_tag }}
+                                        {{ form.out_contract_status }}
+                                        {{ form.out_contract_status.errors }}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row first-visit__info-row">
+                                <div class="col-lg-6">
+                                    <div class="first-visit__item">
+                                        {{ form.city.label_tag }}
+                                        {{ form.city|add_class:"form-control" }}
+                                        {{ form.city.errors }}
+                                    </div>
+                                </div>
+                                <div class="col-lg-6">
+                                    <div class="first-visit__item">
+                                        {{ form.desired_city.label_tag }}
+                                        {{ form.desired_city|add_class:"form-control" }}
+                                        {{ form.desired_city.errors }}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-lg-6">
+                                    <div class="first-visit__item">
+                                        {{ form.country.label_tag }}
+                                        {{ form.country }}
+                                        {{ form.country.errors }}
+                                    </div>
+                                </div>
+                                <div class="col-lg-6">
+                                    <div class="first-visit__item">
+                                        {{ form.desired_country.label_tag }}
+                                        {{ form.desired_country }}
+                                        {{ form.desired_country.errors }}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-xs-12 col-sm-offset-3 col-sm-6">
+                    <div class="row">
+                        <div class="text-center">
+                            <div class="submit-changes__controls">
+                                <button type="submit">{% trans "Save" %}</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</section>
+<!-- End FIrst Visit Page -->
+
+<!-- Photo Upload Form -->
+<form action="{% url 'users:profile_photo_upload' %}" method="POST" role="form" enctype="multipart/form-data" class="photo_upload_form hidden">
+    {% csrf_token %}
+    {{ photo_form }}
+</form>
+
+<!-- CV update form -->
+<form action="{% url 'users:profile_cv_upload' %}" id="cv-upload-form" method="post" role="form" enctype="multipart/form-data" class="cv_form text-center">
+    {% csrf_token %}
+    <input type="file" name="cv" id="cv-upload" style="display:none"/>
+    <div id="cv_updated" class="label label-success cv_updated hidden">{% trans 'CV updated' %}</div>
+</form>
+
+<!-- MODAL TO CROP THE IMAGE -->
+<div class="modal fade" id="modalCrop">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+          <h4 class="modal-title">Crop the photo</h4>
+        </div>
+        <div class="modal-body">
+          <img src="" id="image" style="max-width: 100%;">
+        </div>
+        <div class="modal-footer">
+          <div class="btn-group pull-left" role="group">
+            <button type="button" class="btn btn-default js-zoom-in">
+              <span class="glyphicon glyphicon-zoom-in"></span>
+            </button>
+            <button type="button" class="btn btn-default js-zoom-out">
+              <span class="glyphicon glyphicon-zoom-out"></span>
+            </button>
+          </div>
+          <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+          <button type="button" class="btn btn-primary js-crop-and-upload">Upload</button>
+        </div>
+      </div>
+    </div>
+</div>
+{% endblock content %}
+
+{% block footer_js %}
+<script src="{% static 'js/cropper.min.js' %}" type="text/javascript"></script>
+<script type="text/javascript">
+    // upload CV
+    $("#cv-upload-btn").on("click", function() {
+        $("#cv-upload").trigger("click");
+    });
+
+    $("#cv-upload").change(function(){
+        $("#cv-upload-form").ajaxSubmit({
+            success: function (response) {
+                if (response.success) {
+                    $('#cv_updated').fadeIn().delay(500).fadeOut();
+                    $('.cv-link').attr('href', response.cv);
+                }
+                else {
+                    console.log(response);
+                }
+            }
+        });
+    });
+
+    // upload profile photo
+    $('#photo_upload_btn').on('click', function() {
+        $('#photo_upload').trigger('click');
+    });
+
+    /* SCRIPTS TO HANDLE THE CROPPER BOX */
+    var $image = $('#image');
+    var cropBoxData;
+    var canvasData;
+    $('#modalCrop').on('shown.bs.modal', function () {
+        $image.cropper({
+            viewMode: 1,
+            aspectRatio: 1/1,
+            minCropBoxWidth: 200,
+            minCropBoxHeight: 200,
+            ready: function () {
+                $image.cropper('setCanvasData', canvasData);
+                $image.cropper('setCropBoxData', cropBoxData);
+            }
+        });
+    }).on('hidden.bs.modal', function () {
+        cropBoxData = $image.cropper('getCropBoxData');
+        canvasData = $image.cropper('getCanvasData');
+        $image.cropper('destroy');
+    });
+
+    $('.js-zoom-in').click(function () {
+        $image.cropper('zoom', 0.1);
+    });
+
+    $('.js-zoom-out').click(function () {
+        $image.cropper('zoom', -0.1);
+    });
+
+    /* SCRIPT TO COLLECT THE DATA AND POST TO THE SERVER */
+    $('.js-crop-and-upload').click(function () {
+        var cropData = $image.cropper('getData');
+        $('#id_x').val(cropData['x']);
+        $('#id_y').val(cropData['y']);
+        $('#id_height').val(cropData['height']);
+        $('#id_width').val(cropData['width']);
+        $('#modalCrop').modal('hide');
+        $('.photo_upload_form').ajaxSubmit({
+            beforeSubmit: function (arr, $form, options) {
+                $('.profile-photo').attr('src', '/static/img/loader.gif');
+            },
+            success: function (response) {
+                if (response.success)
+                    $('.profile-photo').attr('src', response.image);
+                    $('.profile-photo-thumbnail').attr('src', response.image);
+            }
+        });
+    });
+
+    /* SCRIPT TO OPEN THE MODAL WITH THE PREVIEW */
+    $('#photo_upload').change(function () {
+      if (this.files && this.files[0]) {
+          var reader = new FileReader();
+          reader.onload = function (e) {
+              $('#image').attr('src', e.target.result);
+              $('#modalCrop').modal('show');
+          }
+          reader.readAsDataURL(this.files[0]);
+      }
+    });
+
+    // add skill
+    $('.btn-add-skill').on('click', function(event) {
+        event.preventDefault();
+        var count = $('#id_form-TOTAL_FORMS').val();
+
+        $('#id_form-TOTAL_FORMS').val(parseInt(count) + 1);
+
+        var html =
+            '<li> \
+                <input type="text" name="form-' + count + '-skill" maxlength="100" id="id_form-' + count + '-skill"> \
+                <select name="form-' + count + '-experience" id="id_form-' + count + '-experience"> \
+                    <option value="8"> \
+                        8 Years \
+                    </option> \
+                    <option value="5"> \
+                        5 Years \
+                    </option> \
+                    <option value="1"> \
+                        1 Year \
+                    </option> \
+                </select> \
+            </li>';
+        $(this).parent().before(html);
+    });
+
+    // status toggle
+    $('#id_status').on('change', function() {
+        $('.in-contract-status-field').removeClass('hidden');
+        $('.out-contract-status-field').removeClass('hidden');
+        $('#id_in_contract_status').val('');
+        $('#id_out_contract_status').val('');
+
+        if ($(this).val() == 1) {
+            $('.in-contract-status-field').addClass('hidden');
+            $('.out-contract-status-field').addClass('hidden');
+        }
+        else if ($(this).val() == 2) {
+            $('.in-contract-status-field').removeClass('hidden');
+            $('.out-contract-status-field').addClass('hidden');
+        }
+        else if ($(this).val() == 3) {
+            $('.in-contract-status-field').addClass('hidden');
+            $('.out-contract-status-field').removeClass('hidden');
+        }
+    });
+</script>
+{% endblock footer_js %}

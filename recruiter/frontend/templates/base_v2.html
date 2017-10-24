@@ -1,0 +1,176 @@
+{% load staticfiles %}
+
+{% load staticfiles i18n bootstrap %}
+{% load render_bundle from webpack_loader %}
+
+<!doctype html>
+<html class="no-js" lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>{% block title %}{% trans "The Contractors Network" %}{% endblock %}</title>
+        <meta name="description" content="">
+        <meta name="author" content="SquareBalloon">
+        <meta name="robots" content="index, follow">
+
+        <link rel="SHORTCUT ICON" href="{% static 'img/favicon.ico' %}" />
+        <link rel="canonical" href="http://www.squareballoon.com{{ request.path }}" />
+
+        <link href="{% static 'css/cropper.min.css' %}" rel="stylesheet">
+        <link href="{% static 'css/select2.min.css' %}" rel="stylesheet">
+        <link href="{% static 'css/jquery-ui.min.css' %}" rel="stylesheet">
+        <link href="{% static 'css/style.css' %}" rel="stylesheet">
+        <link href="{% static 'css/main.min.css' %}" rel="stylesheet">
+
+        <!--[if lt IE 9]>
+            <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+            <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+        <![endif]-->
+        {% block head_js %}{% endblock %}
+        {% block extra_css %}{% endblock %}
+    </head>
+
+    <body>
+        <!-- Start Preloader -->
+        <div id="loader-wrapper">
+            <div id="loader"></div>
+        </div>
+        <!-- End Preloader -->
+
+        {% block nav %}
+            {% if user.is_authenticated %}
+                <!-- Start Header -->
+                <header class="header">
+                    <div class="container container-expand">
+                        <div class="row">
+                            <div class="hidden-xs hidden-sm col-md-1 col-lg-1">
+                                <div class="header__case">
+                                    <a class="header__logo" href="{% url 'recruit:dashboard' %}">
+                                        <img class="img-responsive" src="{% static "img/ct-logo.png" %}" alt="img">
+                                    </a>
+                                </div>
+                            </div>
+                            <div class="hidden-xs hidden-sm col-md-1 col-lg-1">
+                                <div class="header__user-block">
+                                    <div class=" header__info-icon">
+                                        <a href="#">
+                                            <img src="{% static "img/bell.png" %}" alt="img">
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-xs-12 col-sm-6 col-md-4 col-md-push-6 col-lg-4">
+                                <div class="header__user-wrapper">
+                                    <div class="header__img-block">
+                                        <a href="#">
+                                            <img class="img-thumbnail" src="{{ user.get_photo_url }}" alt="img">
+                                        </a>
+                                    </div>
+                                    <div class="header__user-name">
+                                        <!-- Single button -->
+                                        <div class="btn-group">
+                                            <a href="#" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">{{ user.get_full_name }}<span><img src="{% static "img/down-arrow.png" %}" alt="img"></span></a>
+                                            <ul class="dropdown-menu">
+                                                <li><a href="{% url 'users:settings' %}">{% trans "Settings" %}</a></li>
+                                                <li><a href="{% url 'account_logout' %}">{% trans "Logout" %}</a></li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-xs-12 col-sm-6 col-md-6 col-md-pull-4 col-lg-6">
+                                <nav class="header__nav">
+                                    <ul>
+                                        <li>
+                                            {% if user.account_type == user.ACCOUNT_CANDIDATE %}
+                                                <a href="{% url 'users:candidate_profile' user.slug %}">{% trans "My Profile" %}</a>
+                                            {% elif user.account_type == user.ACCOUNT_AGENT or user.account_type == user.ACCOUNT_SUPPORT %}
+                                                {% if user.agent.company or user.support.company %}
+                                                    <a href="{% url 'companies:company_detail' user.profile.company.slug %}">{% trans "My Company" %}</a>
+                                                {% endif %}
+                                            {% endif %}
+                                        </li>
+                                        <li><a class="sub-nav-link" href="#sub-nav">{% trans "My Dashboard" %}</a></li>
+                                        <li><a href="{% url 'chat:chat' %}">{% trans "Messages" %}<div style='display: inline-flex; margin-left: 5px;' id='global-messages-notification'></div></a></li>
+                                    </ul>
+                                </nav>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Start mobile burger -->
+                    <button class="header__burger">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </button>
+                    <!-- End mobile burger -->
+                </header>
+
+                <!-- Start Sub Nav Dashboard section -->
+                <section class="sub-nav" id="sub-nav">
+                    <div class="container">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <ul>
+                                    <li><a href="{% url 'recruit:dashboard' %}">{% trans "Activity Feed" %}</a></li>
+                                    {% if user.account_type == user.ACCCOUNT_CANDIDATE %}
+                                        <li><a href="{% url 'recruit:search' %}#">{% trans "Find Job Positions" %}</a></li>
+                                        <li><a href="{% url 'users:candidate_search' %}">{% trans "Search Candidates" %}</a></li>
+                                        <li><a href="{% url 'users:agent_search' %}">{% trans "Search Agents" %}</a></li>
+                                        <li><a href="{% url 'recruit:application' %}">{% trans "My Application" %}</a></li>
+                                    {% else %}
+                                        <li><a href="{% url 'recruit:search' %}">{% trans "Search Candidates" %}</a></li>
+                                        <li><a href="{% url 'users:agent_search' %}">{% trans "Search Agents" %}</a></li>
+                                        <li><a href="{% url 'recruit:job_post_list' %}">{% trans "Job Postings" %}</a></li>
+                                    {% endif %}
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+                <!-- End Sub Nav Dashboard section -->
+            {% endif %}
+        {% endblock %}
+
+        {% block messages %}
+            {% if user.is_authenticated and not user.profile.is_initial_profile_complete %}
+                {% if user.account_type == user.ACCOUNT_CANDIDATE %}
+                    <div class="alert alert-warning text-center">
+                        <strong>Please fill-up atleast your profile photo, job title and location to continue.</strong>
+                    </div>
+                {% elif user.account_type == user.ACCOUNT_AGENT or user.account_type == user.ACCOUNT_SUPPORT %}
+                    {% if user.profile.company %}
+                        <div class="alert alert-warning text-center">
+                            <strong>Please fill-up atleast your profile photo to continue.</strong>
+                        </div>
+                    {% endif %}
+                {% endif %}
+            {% endif %}
+        {% endblock messages %}
+
+        {% block content %}{% endblock %}
+
+        {% block footer %}
+        {% endblock %}
+
+        <script src="{% url 'js_reverse' %}" type="text/javascript"></script>
+        <script src="{% static 'js/scripts.min.js' %}" type="text/javascript"></script>
+        <script src="{% static 'js/csrf-ajax-cookie.js' %}" type="text/javascript"></script>
+        <script src="{% static 'js/js.cookie.js' %}" type="text/javascript"></script>
+        <script src="{% static 'js/select2.min.js' %}" type="text/javascript"></script>
+        <script src="{% static 'js/jquery-ui.min.js' %}" type="text/javascript"></script>
+        <script src="{% static 'js/jquery.form.min.js' %}"></script>
+
+        {% if not DEBUG %}
+            {% render_bundle 'manifest' 'js' %}
+            {% render_bundle 'chat-vendor' 'js' %}
+            {% render_bundle 'chat' 'js' %}
+        {% else %}
+            {% render_bundle 'main' %}
+        {% endif %}
+
+        {% block footer_js %}{% endblock %}
+    </body>
+</html>

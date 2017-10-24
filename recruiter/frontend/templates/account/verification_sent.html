@@ -1,0 +1,52 @@
+{% extends "account/base.html" %}
+
+{% load i18n %}
+
+{% block title %}{% trans "Verify Your E-mail Address" %}{% endblock %}
+
+{% block content %}
+<section id="landing" class="auth">
+    <div class="container login">
+        <div class="row">
+            <div class="col-sm-offset-3 col-md-offset-3 col-sm-6 col-md-6">
+                <div class="form">
+                    <h1>{% trans "Verify Your E-mail Address" %}</h1>
+                    <p>
+                        {% trans "We have sent an e-mail to you for verification. Follow the link in the email to finalize the signup process. Click" %}
+                        <a href="#" class="resend-email-verification">{% trans "here" %}</a>
+                        {% trans "to resend the verification email or" %}
+                        <a href="mailto:support@mail2.squareballoon.com">{% trans "contact us" %}</a>
+                        {% trans "if you do not receive it." %}
+                    </p>
+                    <p>{% trans "Click" %} <a href="{% url 'account_login' %}">{% trans "here" %}</a> {% trans "to login." %}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Resend email verification form -->
+<form action="{% url 'accounts-email/verify/send' signed_up_user.pk %}" method="POST" class="resend-email-verification-form">
+    {% csrf_token %}
+</form>
+{% endblock %}
+
+{% block footer_js %}
+<script type="text/javascript">
+    // resend email verification
+    $('.resend-email-verification').on('click', function(e){
+        e.preventDefault();
+
+        $('.resend-email-verification-form').ajaxSubmit({
+            beforeSubmit: function (arr, $form, options) {
+                $("#loader-wrapper").show();
+                $("#loader").show();
+            },
+            success: function(response) {
+                $("#loader-wrapper").fadeOut();
+                $("#loader").fadeOut(400);
+            },
+        });
+    })
+</script>
+{% endblock footer_js %}

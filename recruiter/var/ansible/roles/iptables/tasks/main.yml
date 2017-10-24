@@ -1,0 +1,14 @@
+- name: Install iptables-services
+  yum: name=iptables-services state=present
+
+- name: Copy files with rules
+  template: src={{ item.src }} dest={{ item.dest }} owner=root group=root mode=600
+  with_items:
+    - { src: 'iptables', dest: '/etc/sysconfig' }
+    - { src: 'ip6tables', dest: '/etc/sysconfig' }
+
+- name: Restart iptables
+  service: name=iptables state=restarted enabled=yes
+
+- name: Restart ipi6tables
+  service: name=ip6tables state=restarted enabled=yes

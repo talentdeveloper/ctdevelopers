@@ -1,0 +1,4 @@
+-r requirements.txt
+
+asgi_redis==1.4.0
+django-redis==4.8.0

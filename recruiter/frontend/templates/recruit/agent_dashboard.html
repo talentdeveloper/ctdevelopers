@@ -1,0 +1,91 @@
+{% extends 'users/index.html' %}
+
+{% load staticfiles i18n %}
+
+{% block content %}
+<section id="internal-wrap">
+    <div class="container">
+        <div class="row">
+            <ol class="breadcrumb">
+                <li class="active">Activity Feed</li>
+                <li><a href="{% url 'recruit:search' %}">Search Candidates</a></li>
+                <li><a href="{% url 'users:agent_search' %}">Search Agents</a></li>
+                <li><a href="{% url 'recruit:job_post_list' %}">Job Postings</a></li>
+            </ol>
+            <div class="col-md-12 text-center">
+                <div style="padding-top: 20px;">
+                    <ul class="nav nav-tabs" role="tablist">
+                        <li role="presentation" class="active">
+                            <a href="#notifications" aria-controls="notifications" role="tab" data-toggle="tab">Notifications {% if connection_requests %}<span class="badge badge-new badge-notification"><span class="badge-notification-count">{{ connection_requests.count }}</span> New</span>{% endif %}</a>
+                        </li>
+                        <li role="presentation">
+                            <a href="#connections" aria-controls="connections" role="tab" data-toggle="tab">Connections</a>
+                        </li>
+                    </ul>
+
+                    <div class="tab-content">
+                        <div role="tabpanel" class="tab-pane active" id="notifications">
+                            <div class="col-md-12">
+                                <h1>Connection Requests</h1>
+                                <div class="row">
+                                    {% for connection_request in connection_requests %}
+                                        <div class="col-md-4">
+                                            {% include "recruit/snippets/connection_request_card.html" %}
+                                        </div>
+                                    {% empty %}
+                                        <p>No requests as of the moment.</p>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                        <div role="tabpanel" class="tab-pane" id="connections">
+                            <div class="col-md-12">
+                                <div class="row">
+                                    {% for connection in connections %}
+                                        {% include "recruit/snippets/connection_card.html" %}
+                                    {% empty %}
+                                        <p>You have no connections yet.</p>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block footer_js %}
+<script type="text/javascript">
+    $('.btn-connection-request').on("click", function() {
+        var uuid = $(this).attr('data-uuid');
+        var action = $(this).attr('data-action');
+
+        $.ajax({
+            context: this,
+            type: 'POST',
+            url: Urls['recruit:connection_request_delete'](uuid),
+            data: {
+                action: action,
+            },
+            dataType: "json",
+            success: function(response) {
+                var count = $('.badge-notification-count').html();
+                if (count == 1) {
+                    $('.badge-notification').remove();
+                }
+                else {
+                    $('.badge-notification-count').html(count - 1);
+                }
+                var row = $(this).closest('.row');
+                if (row.find('.connection-request-card').length == 1)
+                    row.html('<p>No requests as of the moment.</p>')
+
+                $(this).closest('.connection-request-card').parent().remove();
+            }
+        });
+    });
+</script>
+{% endblock footer_js %}

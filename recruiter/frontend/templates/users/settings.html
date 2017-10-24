@@ -1,0 +1,524 @@
+{% extends 'base_v2.html' %}
+
+{% load staticfiles i18n bootstrap widget_tweaks %}
+
+{% block nav %}
+{{ block.super }}
+<!-- Start Sub Nav Profile section -->
+<section class="sub-nav opened" id="sub-nav-profile">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-12">
+                <ul>
+                    <li><a class="active sub-nav__tab-link" href="#edit-settings">{% trans "Edit Settings" %}</a></li>
+                    <li><a class="sub-nav__tab-link" href="#change-password">{% trans "Change Password" %}</a></li>
+                    <li><a class="sub-nav__tab-link" href="#profile-privacy">{% trans "Profile Privacy" %}</a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</section>
+<!-- End Sub Nav Profile section -->
+{% endblock nav %}
+
+{% block content %}
+<!-- Start Edit Settings Section -->
+<section class="sub-nav__tab active edit-settings" id="edit-settings">
+    <form action="{% url 'users:settings' %}" method="POST">
+        {% csrf_token %}
+        <div class="container">
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="edit-settings__block">
+                        <div class="row">
+                            <div class="col-sm-12 col-md-4">
+                                <div class="edit-settings__form">
+                                    <div class="edit-settings__form-set">
+                                        {{ form.first_name.label_tag }}
+                                        {{ form.first_name.errors }}
+                                        {{ form.first_name }}
+                                    </div>
+                                    <div class="edit-settings__form-set">
+                                        {{ form.last_name.label_tag }}
+                                        {{ form.last_name.errors }}
+                                        {{ form.last_name }}
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-sm-12 col-md-4">
+                                <div class="edit-settings__avatar-box">
+                                    <div class="edit-settings__avatar">
+                                        <img class="img-responsive profile_photo" src="{{ user.get_photo_url }}" alt="img">
+                                        <div class="edit-settings__update-photo">
+                                            <a href="#" class="btn" id="photo_upload_btn">Update Photo</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-sm-12 col-md-4">
+                                <div class="edit-settings__form">
+                                    <div class="edit-settings__form-set">
+                                        {{ form.title.label_tag }}
+                                        {{ form.title.errors }}
+                                        {{ form.title }}
+                                    </div>
+                                    <div class="edit-settings__form-set">
+                                        {{ form.email.label_tag }}
+                                        {{ form.email.errors }}
+                                        {{ form.email }}
+                                    </div>
+                                    <div class="edit-settings__form-set">
+                                        {{ form.username.label_tag }}
+                                        {{ form.username.errors }}
+                                        {{ form.username }}
+                                        {% if not form.username.errors %}
+                                            {{ form.username.help_text }}
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="edit-settings__info">
+                        <div class="row">
+                            <div class="col-md-4 border-right">
+                                <div class="edit-settings__info-block">
+                                    <h3>{% trans "Your Occupation" %}</h3>
+                                    <div class="row">
+                                        <div class="col-xs-6 col-md-6">
+                                            <div class="edit-settings__title">
+                                                <h4>You Are Agent</h4>
+                                            </div>
+                                        </div>
+                                        <div class="col-xs-6 col-md-6">
+                                            <div class="edit-settings__check-box">
+                                                <div class="edit-settings__wrap-checkbox">
+                                                <input type="radio" id="agent" name="user" checked/>
+                                                    <label class="edit-settings__slider" for="agent"></label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-xs-6 col-md-6">
+                                            <div class="edit-settings__title">
+                                                <h4>You Are Client</h4>
+                                            </div>
+                                        </div>
+                                        <div class="col-xs-6 col-md-6">
+                                            <div class="edit-settings__check-box">
+                                                <div class="edit-settings__wrap-checkbox">
+                                                <input type="radio" id="client" name="user"/>
+                                                    <label class="edit-settings__slider" for="client"></label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4 border-right">
+                                <div class="edit-settings__info-block expand">
+                                    <h3>{% trans "Date Joined" %}</h3>
+                                    <div class="edit-settings__title m-top">
+                                        <h4>{{ user.date_joined }}</h4>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4 no-border">
+                                <div class="edit-settings__info-block">
+                                    <h3>{% trans "Automatic download of" %} <span>{% trans "CV" %}</span></h3>
+                                    <div class="edit-settings__check-box text-center">
+                                        <div class="edit-settings__wrap-checkbox">
+                                            {{ form.cv|attr:"id:cv" }}
+                                            {{ form.cv.errors }}
+                                            <label class="edit-settings__slider" for="cv"></label>
+                                        </div>
+                                    </div>
+                                    <div class="edit-settings__names">
+                                        <span>{% trans "No" %}</span>
+                                        <span>{% trans "Yes" %}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-xs-12 col-sm-offset-3 col-sm-6">
+                <div class="row">
+                    <div class="col-xs-6 col-sm-6 col-md-6">
+                        <div class="submit-changes__controls">
+                            <button type="submit">{% trans "Save" %}</button>
+                        </div>
+                    </div>
+                    <div class="col-xs-6 col-sm-6 col-md-6">
+                        <div class="submit-changes__controls text-right cancel">
+                            <button type="button">{% trans "Cancel" %}</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+</section>
+<!-- End Edit Settings Section -->
+
+<!-- Start Change Password section -->
+<section class="sub-nav__tab change-password" id="change-password">
+    <div class="change-password__form">
+        <div class="container">
+            <form action="{% url 'api-auth:rest_password_change' %}" method="POST" class="change-password-form">
+                {% csrf_token %}
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="change-password__header">
+                            <h3>{% trans "Change Password" %}</h3>
+                            <p>{% trans "Your password must contain at least 8 characters in length (a strong password has at least 14 characters)" %}</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-12">
+                        {{ form.non_field_errors }}
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-xs-12 col-sm-offset-3 col-sm-6">
+                        <div class="change-password__form">
+                            <label for="id_old_password">Current Password:</label>
+                            <div class="error error-old_password"></div>
+                            <input type="password" name="old_password" placeholder="Current Password" required="" id="id_old_password">
+
+                            <label for="id_new_password1">New Password:</label>
+                            <div class="error error-new_password1"></div>
+                            <input type="password" name="new_password1" placeholder="New Password" required="" id="id_new_password1">
+
+                            <label for="id_new_password2">New Password (again):</label>
+                            <div class="error error-new_password2"></div>
+                            <input type="password" name="new_password2" placeholder="New Password (again)" required="" id="id_new_password2">
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-xs-12 col-sm-offset-3 col-sm-6">
+                        <div class="change-password__require">
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <div class="edit-settings__check-box text-center">
+                                        <div class="edit-settings__wrap-checkbox">
+                                        <input type="checkbox" id="require" name="require" checked/>
+                                            <label class="edit-settings__slider" for="require"></label>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-8">
+                                    <h4>{% trans "Require all devices to sign up with new password" %}</h4>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-xs-6 col-sm-6 col-md-6">
+                                    <div class="change-password__controls">
+                                        <button type="submit">{% trans "Save" %}</button>
+                                    </div>
+                                </div>
+                                <div class="col-xs-6 col-sm-6 col-md-6">
+                                    <div class="change-password__controls text-right cancel">
+                                        <button type="button">{% trans "Cancel" %}</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</section>
+<!-- End Change Password section -->
+
+<!-- Start Profile Privacy Section -->
+<section class="sub-nav__tab profile-privacy" id="profile-privacy">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="profile-privacy__header">
+                    <h3>{% trans "Profile Privacy" %}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-sm-offset-1 col-sm-10 col-md-offset-2 col-md-8">
+                <div class="row">
+                    <div class="col-sm-8 col-md-9">
+                        <div class="profile-privacy__content">
+                            <h3>{% trans "Edit Your Public Profile" %}</h3>
+                            <p>{% trans "Choose how your profile appears to non-logged in memmbers via search engines" %}</p>
+                        </div>
+                    </div>
+                    <div class="col-sm-4 col-md-3">
+                        <div class="profile-privacy__content text-right">
+                            <a href="#">{% trans "Change" %}</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-sm-8 col-md-9">
+                        <div class="profile-privacy__content">
+                            <h3>{% trans "Who Can See Your Profile" %}</h3>
+                            <p>{% trans "Choose who can see your profile" %}</p>
+                        </div>
+                    </div>
+                    <div class="col-sm-4 col-md-3">
+                        <div class="profile-privacy__content text-right">
+                            <a href="#">{% trans "Change" %}</a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-sm-8 col-md-9">
+                        <div class="profile-privacy__content">
+                            <h3>{% trans "Email Newsletter" %}</h3>
+                            <p>{% trans "Members can send you private messages" %}</p>
+                        </div>
+                    </div>
+                    <div class="col-sm-4 col-md-3">
+                        <div class="profile-privacy__content text-right">
+                            <div class="edit-settings__check-box">
+                                <div class="edit-settings__wrap-checkbox">
+                                    <input type="checkbox" id="email-checkbox" name="email-checkbox" checked/>
+                                    <label class="edit-settings__slider" for="email-checkbox"></label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-sm-8 col-md-9">
+                        <div class="profile-privacy__content">
+                            <h3>{% trans "Allow Private Message" %}</h3>
+                            <p>{% trans "Members can send you private messages" %}</p>
+                        </div>
+                    </div>
+                    <div class="col-sm-4 col-md-3">
+                        <div class="profile-privacy__content text-right">
+                            <div class="edit-settings__check-box">
+                                <div class="edit-settings__wrap-checkbox">
+                                    <input type="checkbox" id="pr-mess" name="pr-mess"/>
+                                    <label class="edit-settings__slider" for="pr-mess"></label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-sm-8 col-md-9">
+                        <div class="profile-privacy__content">
+                            <h3>{% trans "Contracts" %}</h3>
+                            <p>{% trans "Receive contract requests from:" %}</p>
+                        </div>
+                    </div>
+                    <div class="col-sm-4 col-md-3">
+                        <div class="profile-privacy__content text-right">
+                            <select name="agent" id="agent-select">
+                                <option value="1">
+                                    Contact agent
+                                </option>
+                                <option value="2">
+                                    Contact agent
+                                </option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-sm-8 col-md-9">
+                        <div class="profile-privacy__content">
+                            <h3>{% trans "Email Notification" %}</h3>
+                            <p>{% trans "Recieve mail with unread notifications every:" %}</p>
+                        </div>
+                    </div>
+                    <div class="col-sm-4 col-md-3">
+                        <div class="profile-privacy__content text-right">
+                            <select name="agent" id="agent-select">
+                                <option value="1">
+                                    15 minutes
+                                </option>
+                                <option value="2">
+                                    15 minutes
+                                </option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-xs-6 col-sm-6 col-md-6">
+                        <div class="change-password__controls">
+                            <button type="submit">{% trans "Save" %}</button>
+                        </div>
+                    </div>
+                    <div class="col-xs-6 col-sm-6 col-md-6">
+                        <div class="change-password__controls text-right cancel">
+                            <button type="button">{% trans "Cancel" %}</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<!-- End Profile Privacy Section -->
+
+<!-- Photo Upload Form -->
+<form action="{% url 'users:profile_photo_upload' %}" method="POST" role="form" enctype="multipart/form-data" class="photo_upload_form hidden">
+    {% csrf_token %}
+    {{ photo_form }}
+</form>
+
+<!-- MODAL TO CROP THE IMAGE -->
+<div class="modal fade" id="modalCrop">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+          <h4 class="modal-title">Crop the photo</h4>
+        </div>
+        <div class="modal-body">
+          <img src="" id="image" style="max-width: 100%;">
+        </div>
+        <div class="modal-footer">
+          <div class="btn-group pull-left" role="group">
+            <button type="button" class="btn btn-default js-zoom-in">
+              <span class="glyphicon glyphicon-zoom-in"></span>
+            </button>
+            <button type="button" class="btn btn-default js-zoom-out">
+              <span class="glyphicon glyphicon-zoom-out"></span>
+            </button>
+          </div>
+          <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+          <button type="button" class="btn btn-primary js-crop-and-upload">Upload</button>
+        </div>
+      </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block footer_js %}
+<script src="{% static 'js/cropper.min.js' %}" type="text/javascript"></script>
+<script type="text/javascript">
+    $('#photo_upload_btn').on('click', function() {
+        $('#photo_upload').trigger('click');
+    });
+
+    /* SCRIPTS TO HANDLE THE CROPPER BOX */
+    var $image = $('#image');
+    var cropBoxData;
+    var canvasData;
+    $('#modalCrop').on('shown.bs.modal', function () {
+        $image.cropper({
+            viewMode: 1,
+            aspectRatio: 1/1,
+            minCropBoxWidth: 200,
+            minCropBoxHeight: 200,
+            ready: function () {
+                $image.cropper('setCanvasData', canvasData);
+                $image.cropper('setCropBoxData', cropBoxData);
+            }
+        });
+    }).on('hidden.bs.modal', function () {
+        cropBoxData = $image.cropper('getCropBoxData');
+        canvasData = $image.cropper('getCanvasData');
+        $image.cropper('destroy');
+    });
+
+    $('.js-zoom-in').click(function () {
+        $image.cropper('zoom', 0.1);
+    });
+
+    $('.js-zoom-out').click(function () {
+        $image.cropper('zoom', -0.1);
+    });
+
+    /* SCRIPT TO COLLECT THE DATA AND POST TO THE SERVER */
+    $('.js-crop-and-upload').click(function () {
+        var cropData = $image.cropper('getData');
+        $('#id_x').val(cropData['x']);
+        $('#id_y').val(cropData['y']);
+        $('#id_height').val(cropData['height']);
+        $('#id_width').val(cropData['width']);
+        $('#modalCrop').modal('hide');
+        $('.photo_upload_form').ajaxSubmit({
+            beforeSubmit: function (arr, $form, options) {
+                $('.profile_photo').attr('src', '/static/img/loader.gif');
+            },
+            success: function (response) {
+                if (response.success) {
+                    $('.profile_photo').attr('src', response.image);
+                    $('.profile-photo-thumbnail').attr('src', response.image);
+                }
+            }
+        });
+    });
+
+    /* SCRIPT TO OPEN THE MODAL WITH THE PREVIEW */
+    $('#photo_upload').change(function () {
+      if (this.files && this.files[0]) {
+          var reader = new FileReader();
+          reader.onload = function (e) {
+              $('#image').attr('src', e.target.result);
+              $('#modalCrop').modal('show');
+          }
+          reader.readAsDataURL(this.files[0]);
+      }
+    });
+
+    // change password form
+    $('.change-password-form').on('submit', function(e) {
+        e.preventDefault();
+
+        $('.error').html('');
+
+        $(this).ajaxSubmit({
+            beforeSubmit: function (arr, $form, options) {
+                $("#loader-wrapper").show();
+                $("#loader").show();
+            },
+            success: function(response) {
+                $('#id_old_password').val('');
+                $('#id_new_password1').val('');
+                $('#id_new_password2').val('');
+
+                $("#loader-wrapper").fadeOut();
+                $("#loader").fadeOut(400);
+            },
+            error: function(response) {
+                if (response.status == 400) {
+                    $.each(response.responseJSON, function(key, value) {
+                        var errors = '<ul class="error-list">';
+                        $.each(value, function(key, value) {
+                            errors += '<li>' + value + '</li>';
+                        });
+                        errors += '</ul>';
+
+                        $('.error-' + key).html(errors);
+                    });
+                }
+                else {
+                    console.log('An unexpected error occured.');
+                }
+                $("#loader-wrapper").fadeOut();
+                $("#loader").fadeOut(400);
+            }
+        });
+    })
+</script>
+{% endblock footer_js %}

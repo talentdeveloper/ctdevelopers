@@ -1,0 +1,66 @@
+{% extends 'users/index.html' %}
+
+{% load staticfiles i18n humanize chat_tags %}
+
+{% block content %}
+<section id="internal-wrap">
+    <section id="my-applications">
+        <div class="container">
+            <div class="row">
+                <ol class="breadcrumb">
+                    <li><a href="{% url 'recruit:dashboard' %}">Activity Feed</a></li>
+                    <li><a href="{% url 'recruit:search' %}">Find job positions</a></li>
+                    <li><a href="{% url 'users:candidate_search' %}">Search Candidates</a></li>
+                    <li><a href="{% url 'users:agent_search' %}">Search Agents</a></li>
+                    <li class="active">My Application</li>
+                </ol>
+            </div>
+            <div class="row">
+                <div class="col-md-6 text-left">
+                    <h2>My Applications</h2>
+                </div>
+            </div>
+            <div class="job-applications-table">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <td><strong>Job Title</strong></td>
+                            <td><strong>Company</strong></td>
+                            <td><strong>Date Applied</strong></td>
+                            <td><strong>Status</strong></td>
+                            <td><strong></td>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for job_application in job_applications %}
+                            <tr>
+                                <td>
+                                    <span class="job-post-title"><a href="{% url 'recruit:job_post_detail' job_application.job_post.uuid %}">{{ job_application.job_post.title }}</a></span>
+                                    <span class="block">
+                                        Posted by
+                                        <a href="{% url 'companies:company_detail' job_application.job_post.posted_by.company.slug %}?profile={{ job_application.job_post.posted_by.user.agent.pk }}">{{ job_application.job_post.posted_by }}</a>
+                                    </span>
+                                </td>
+                                <td>
+                                    <img src="{{ job_application.job_post.posted_by.company.logo.url }}" class="company-image">&nbsp;
+                                    {{ job_application.job_post.posted_by.company.name }}
+                                </td>
+                                <td>
+                                    {{ job_application.created_at|date:"d/m/y" }}
+                                </td>
+                                <td>{{ job_application.status }}</td>
+                                {% get_user_conversation user job_application.job_post.posted_by.user as conversation %}
+                                <td><a href="{% url 'chat:chat' conversation.pk %}"><i class="glyphicon glyphicon-envelope"></i></strong></a></td>
+                            </tr>
+                        {% empty %}
+                            <tr class="text-center">
+                                <td colspan="5">No job posts yet.</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+</section>
+{% endblock %}

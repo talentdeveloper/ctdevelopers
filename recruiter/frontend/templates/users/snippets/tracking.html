@@ -1,0 +1,112 @@
+{% load humanize %}
+
+<div class="col-md-4 tracking-section">
+    <div class="row auto-tracking-section">
+        <div class="tracking-item">
+            <span class="orange-text">First contact sent:</span>
+            <span class="tracking-first-contact-sent">{{ first_contact_sent.created_at|date:"d/m/y" }}</span>
+        </div>
+        <div class="tracking-item">
+            <span class="orange-text">Last message sent:</span>
+            <span class="tracking-last-message-sent">{{ last_message_sent.created_at|date:"d/m/y" }}</span>
+        </div>
+        <div class="tracking-item">
+            <span class="orange-text">Last message received:</span>
+            <span class="tracking-last-received-sent">{{ last_message_received.created_at|date:"d/m/y" }}</span>
+        </div>
+    </div>
+    <div class="row manual-tracking-section hidden">
+        <form action="{% url 'users:user_note_create' %}" method="POST" class="create-note-form hidden">
+            {% csrf_token %}
+            <input type="hidden" name="note_to" id="id_note_to" value="{{ profile.user.pk }}">
+            <div class="form-group">
+                <label class="control-label" for="id_text">Notes:</label>
+                <div class=" ">
+                    <textarea type="text" name="text" class="form-control" required="" id="id_text"></textarea>
+                </div>
+                <div class="text_error error orange-text"></div>
+            </div>
+            <div class="note-type-field">
+                <div class="col-md-6">
+                    <input type="hidden" name="type" id="id_type">
+                    <label class="control-label" for="id_type">Insert:</label> &nbsp;
+                    <i class="glyphicon glyphicon-phone note-type" data-type="{{ user_note.TYPE_TEXT }}"></i> &nbsp;
+                    <i class="glyphicon glyphicon-earphone note-type" data-type="{{ user_note.TYPE_CALL }}"></i> &nbsp;
+                    <i class="glyphicon glyphicon-envelope note-type" data-type="{{ user_note.TYPE_MAIL }}"></i>
+                    <div class="type_error error orange-text"></div>
+                </div>
+                <div class="col-md-6 text-right">
+                    <button class="btn btn-primary btn-cancel-create-note">Cancel</button>
+                    <button class="btn btn-primary btn-create-note">Save</button>
+                </div>
+            </div>
+        </form>
+        <div class="row">
+            <div class="col-md-6">
+                <h5>History</h5>
+            </div>
+            <div class="col-md-6 text-right">
+                <i class="glyphicon glyphicon-plus btn-show-create-note"></i>
+            </div>
+        </div>
+        <div class="note-history">
+            {% for user_note in user_notes %}
+                <div class="row note-history-item">
+                    <div class="note-history-item-details">
+                        <div class="row">
+                            <div class="col-md-9">
+                                <span class="note-history-timestamp">{{ user_note.created_at|date:"D, F d, o P" }} <strong>{{ user_note.created_at|naturaltime }}</strong></span>
+                            </div>
+                            <div class="col-md-3 text-right">
+                                <span class="note-history-timestamp">
+                                    <i class="glyphicon glyphicon-pencil btn-action-note-history btn-edit-note"></i>
+                                    <i class="glyphicon glyphicon-remove btn-action-note-history btn-delete-note orange-text" data-user-note-pk="{{ user_note.pk }}"></i>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="row note-item-text">
+                            <div class="col-md-1 user-note-type-icon">
+                                {% if user_note.type == user_note.TYPE_TEXT %}
+                                    <i class="glyphicon glyphicon-phone"></i>
+                                {% elif user_note.type == user_note.TYPE_CALL %}
+                                    <i class="glyphicon glyphicon-earphone"></i>
+                                {% elif user_note.type == user_note.TYPE_MAIL %}
+                                    <i class="glyphicon glyphicon-envelope"></i>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-11 user-note-text">
+                                {{ user_note.text }}
+                            </div>
+                        </div>
+                    </div>
+                    <form action="{% url 'users:user_note_update' user_note.pk %}" method="POST" class="edit-note-form hidden">
+                        {% csrf_token %}
+                        <input type="hidden" name="note_to" id="id_note_to" value="{{ profile.user.pk }}">
+                        <div class="form-group">
+                            <label class="control-label" for="id_text">Notes:</label>
+                            <div class=" ">
+                                <textarea type="text" name="text" class="form-control" required="" id="id_text">{{ user_note.text }}</textarea>
+                            </div>
+                            <div class="text_error error orange-text"></div>
+                        </div>
+                        <div class="note-type-field">
+                            <div class="col-md-6">
+                                <input type="hidden" name="type" id="id_type" value="{{ user_note.type }}">
+                                <label class="control-label" for="id_type">Insert:</label> &nbsp;
+                                <i class="glyphicon glyphicon-phone note-type {% if user_note.type == user_note.TYPE_TEXT %}active{% endif %}" data-type="{{ user_note.TYPE_TEXT }}"></i> &nbsp;
+                                <i class="glyphicon glyphicon-earphone note-type {% if user_note.type == user_note.TYPE_CALL %}active{% endif %}" data-type="{{ user_note.TYPE_CALL }}"></i> &nbsp;
+                                <i class="glyphicon glyphicon-envelope note-type {% if user_note.type == user_note.TYPE_MAIL %}active{% endif %}" data-type="{{ user_note.TYPE_MAIL }}"></i>
+                                <div class="type_error error orange-text"></div>
+                            </div>
+                            <div class="col-md-6 text-right">
+                                <button class="btn btn-primary btn-save-edit-note">Save</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            {% empty %}
+                <div class="no-history">No history yet.</div>
+            {% endfor %}
+        </div>
+    </div>
+</div>

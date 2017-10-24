@@ -1,0 +1,31 @@
+{% extends 'users/index.html' %}
+
+{% load staticfiles i18n bootstrap %}
+
+{% block content %}
+<section id="internal-wrap">
+    <!-- internal block -->
+    <section id="account">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-8 col-md-offset-2 profile-left">
+                    <div class="row">
+                        <div class="col-md-4 text-left">
+                            <h4>{{ request.user.get_full_name }}</h4>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row pending-text">
+                <div class="col-md-8 col-md-offset-2">
+                    <div class="row">
+                        <h4>You have been added to the company account, {{ company.name }}. <a href="{% url 'recruit:dashboard' %}">Click here to continue.</a></h4>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    <!-- end internal block -->
+</section>
+<!-- end new admin content -->
+{% endblock %}

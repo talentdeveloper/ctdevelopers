@@ -1,0 +1,30 @@
+version: '2'
+
+volumes:
+  postgres_data: {}
+  recruiter-media: {}
+
+services:
+  postgres:
+    image: "postgres:9.6"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_USER=recruiter
+      - POSTGRES_PASSWORD=recruiter!
+
+  redis:
+    image: "redis:alpine"
+
+  recruiter:
+    build: .
+    volumes:
+      - recruiter-media:/recruiter/frontend/media
+    depends_on:
+      - postgres
+      - redis
+    ports:
+      - "80:80"
+    links:
+      - postgres
+      - redis

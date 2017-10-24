@@ -1,0 +1,50 @@
+{% extends 'users/index.html' %}
+
+{% load staticfiles i18n recruit_tags %}
+
+{% block content %}
+<section id="internal-wrap">
+    <!-- internal block -->
+    <div class="container">
+        <ol class="breadcrumb">
+            <li><a href="{% url 'recruit:dashboard' %}">Activity Feed</a></li>
+            <li><a href="{% url 'recruit:search' %}">Search Candidates</a></li>
+            <li><a href="{% url 'users:agent_search' %}">Search Agents</a></li>
+            <li><a href="{% url 'recruit:job_post_list' %}">Job Postings</a></li>
+        </ol>
+        <div class="row" style="padding-top:40px;">
+            <div class="col-md-12 text-center">
+                <div class="row">
+                    <h1>Applicants</h1>
+                </div>
+                <div class="row">
+                    {% for job_application in job_applications %}
+                        <div class="card-item col-md-4">
+                            <div class="col-md-4">
+                                <img src="{% if job_application.candidate.photo %}{{ job_application.candidate.photo.url }}{% else %}{% static 'img/default_user.jpg' %}{% endif %}" style="width:70px; border-radius:50%">
+                            </div>
+                            <div class="col-md-8 text-left">
+                                <span class="search-info"><a href="{% url 'users:candidate_profile' job_application.candidate.user.slug %}">{{ job_application.candidate.user.get_full_name }}</a></span>
+                                <span class="search-info">{{ job_application.candidate.user.email }}</span>
+                                <span class="search-info">{{ job_application.candidate.phone }}</span>
+                                <span class="search-info">{{ job_application.candidate.location|default_if_none:"" }}</span>
+                                <span class="search-info">{{ job_application.candidate.title|default_if_none:"" }}</span>
+                                <div class="job-post-skills search-info">
+                                    {% for skill in job_application.candidate.skills.all %}
+                                        <span class="skill">{{ skill.name }}</span>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                    {% empty %}
+                        <p>No applicants yet.</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- end internal block -->
+</section>
+<!-- end new admin content -->
+{% endblock %}
+

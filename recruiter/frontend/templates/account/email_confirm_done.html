@@ -1,0 +1,22 @@
+{% extends "account/base.html" %}
+
+{% load i18n bootstrap account socialaccount %}
+
+{% block head_title %}{% trans "Email Confirmed" %}{% endblock %}
+
+{% block content %}
+<section id="landing" class="auth">
+    <div class="container login">
+        <div class="row">
+            <div class="col-sm-offset-3 col-md-offset-3 col-sm-6 col-md-6">
+                <div class="form">
+                    <h1>{% trans "Email Confirmed" %}</h1>
+                    <p>{% trans "Thank you for verifying your email address." %}</p>
+                    <p>{% trans "Login your account" %} <a href="{% url 'account_login' %}">{% trans "here." %}</a></p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+

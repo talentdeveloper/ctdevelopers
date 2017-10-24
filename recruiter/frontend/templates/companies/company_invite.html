@@ -1,0 +1,40 @@
+{% extends 'users/index.html' %}
+
+{% load staticfiles i18n bootstrap %}
+
+{% block content %}
+<section id="internal-wrap">
+    <!-- internal block -->
+    <section id="account">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-7 col-md-offset-1 profile-left">
+                    <div class="row">
+                        <div class="col-md-4 text-left">
+                            <h4>{{ request.user.agent.company.name }}</h4>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-12 profile-update">
+                            <h5 style="margin:20px 0px;">{% trans 'Invite user by email' %}</h5>
+                            <form action="{% url 'companies:company_invite' %}" method="POST" enctype="multipart/form-data">
+                                {% csrf_token %}
+                                {{ form|bootstrap }}
+                                <div class="form-group">
+                                    <button type="submit" class="btn btn-primary btn-lg">{% trans 'Send invitation' %}</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    <!-- end internal block -->
+</section>
+<!-- end new admin content -->
+{% endblock %}
+
+{% block footer_js %}
+<script src="{% static 'js/jquery.form.min.js' %}"></script>
+{% endblock %}

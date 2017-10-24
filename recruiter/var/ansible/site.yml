@@ -1,0 +1,8 @@
+- name: Configure production server
+  hosts: localhost
+
+  roles:
+    - firewalld
+    - iptables
+    - docker
+    - recruiter

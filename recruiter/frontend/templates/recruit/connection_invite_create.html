@@ -1,0 +1,74 @@
+{% extends 'users/index.html' %}
+
+{% load staticfiles i18n recruit_tags bootstrap %}
+
+{% block content %}
+<section id="internal-wrap">
+    <div class="container">
+        <div class="row">
+            {% if user.account_type == user.ACCOUNT_AGENT %}
+                <ol class="breadcrumb">
+                    <li><a href="{% url 'recruit:dashboard' %}">Activity Feed</a></li>
+                    <li><a href="{% url 'recruit:search' %}">Search Candidates</a></li>
+                    <li><a href="{% url 'users:agent_search' %}">Search Agents</a></li>
+                </ol>
+            {% elif user.account_type == user.ACCOUNT_CANDIDATE %}
+                <ol class="breadcrumb">
+                    <li><a href="{% url 'recruit:dashboard' %}">Activity Feed</a></li>
+                    <li><a href="{% url 'recruit:search' %}">Find job positions</a></li>
+                    <li><a href="{% url 'users:candidate_search' %}">Search Candidates</a></li>
+                    <li><a href="{% url 'users:agent_search' %}">Search Agents</a></li>
+                    <li><a href="#">My Application</a></li>
+                </ol>
+            {% endif %}
+            <div class="col-md-12 text-center">
+                {% if request.GET.connection_type|add:"0" == connection_invite.CONNECTION_NETWORK %}
+                    <h1>Invite as Network</h1>
+                {% elif request.GET.connection_type|add:"0" == connection_invite.CONNECTION_TEAM %}
+                    <h1>Invite as Team Member</h1>
+                {% endif %}
+            </div>
+            <div class="col-md-4 col-md-offset-4">
+                <form class="connection-invite-form" action="{% url 'recruit:connection_invite_create' %}" method="POST">
+                    {% csrf_token %}
+                    <div class="invite-success text-center"></div>
+                    <input type="hidden" name="connection_type" value="{{ request.GET.connection_type|add:"0" }}">
+                    <input type="hidden" name="account_type" value="{{ request.GET.account_type|add:"0" }}">
+                    <div class="form-group">
+                        <label for="id_connectee_email">Email</label>
+                        <input type="email" name="connectee_email" class="form-control" required id="id_email" value="{{ form.email.value|default_if_none:'' }}"/>
+                        <div class="connectee_email_error error"></div>
+                    </div>
+                    <div class="text-center">
+                        <button type="submit" class="btn btn-primary btn-invite">Invite</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block footer_js %}
+<script src="{% static 'js/jquery.form.min.js' %}"></script>
+<script type="text/javascript">
+    $('.btn-invite').on('click', function(event) {
+        event.preventDefault();
+        $(".invite-success").html('');
+        $(".error").html('');
+        $(".connection-invite-form").ajaxSubmit({
+            success: function (response) {
+                if (response.success) {
+                    $(".invite-success").html('User invited.');
+                }
+                else {
+                    $.each(response.errors, function(key, value){
+                        var form_error = key + '_error';
+                        $('.' + form_error).html(value);
+                    });
+                }
+            }
+        });
+    });
+</script>
+{% endblock footer_js %}

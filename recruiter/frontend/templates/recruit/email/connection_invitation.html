@@ -1,0 +1,13 @@
+{% load i18n %}
+Hello,<br>
+<br>
+You received this email because {{ connection_invite.connecter.get_full_name }} invited<br>
+you to join as their {{ connection_invite.get_connection_type_display }} on SquareBalloon.<br>
+<br>
+To accept invitation, please signup here:<br>
+<a href="{{ current_site }}{% url 'account_signup' %}?invite_type=connection&account_type={{ account_type }}&uuid={{ connection_invite.uuid }}&email={{ connection_invite.connectee_email }}">
+    {{ current_site }}{% url 'account_signup' %}?invite_type=connection&account_type={{ account_type }}&uuid={{ connection_invite.uuid }}&email={{ connection_invite.connectee_email }}
+</a>
+<br>
+With best regards,<br>
+SquareBalloon.com

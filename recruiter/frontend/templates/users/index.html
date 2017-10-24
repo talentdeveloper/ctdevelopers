@@ -1,0 +1,66 @@
+{% extends 'base.html' %}
+
+{% load staticfiles i18n bootstrap %}
+
+{% block content %}
+<section id="internal-wrap">
+    <!-- internal block -->
+    <section id="account">
+        <div class="container">
+            <h2>{% trans "Your Account" %}</h2>
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="text">
+                        <h4>{% trans "Basic Info" %}</h4>
+                        <div class="form">
+                            <form id="account-form" action="{% url 'update_user' %}" method="post" role="form"
+                                  parsley-use-html5-constraints="false" novalidate="" >
+                                {% csrf_token %}
+                                <div class="msg"></div>
+                                <label>{% trans "Email" %}</label>
+                                <input type="email" id="email" name="email" class="form-control" required="" autocomplete="off"
+                                       value={{ user.email }}
+                                       parsley-maxlength="50" parsley-required="true" parsley-type="email"/>
+                                <label>{% trans "Phone" %}</label>
+                                <input type="phone" id="phone" name="phone" class="form-control" required="" autocomplete="off"
+                                       value={{ user.phone }}
+                                       parsley-maxlength="16" parsley-required="true" parsley-type="phone"/>
+                                <label>{% trans "Password" %}</label>
+                                <input type="password" id="password1" name="password1" minlength="8" class="form-control" autocomplete="off">
+                                <label>{% trans "Confirm Password" %}</label>
+                                <input type="password" id="password2" name="password2" minlength="8" class="form-control" autocomplete="off">
+                                <button type="submit" class="btn">{% trans "Update Info" %}</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-offset-2 col-md-6">
+                   <div class="payments">
+                        <h4>{% trans "Photo" %}</h4>
+                        <div class="form">
+                            <form id="account-photo-form" action="/update_photo" method="post" role="form"
+                                  parsley-use-html5-constraints="false" novalidate="" enctype="multipart/form-data">
+                                {% csrf_token %}
+                                <div class="msg"></div>
+                                <img id="account-photo" width="200px" height="160px" src="/media/{{user.photo}}">
+                                <br>
+                                <label>{% trans "Email" %}</label>
+                                <input type="hidden" id="email" name="email" class="form-control" required="" autocomplete="off"
+                                       value={{ user.email }}
+                                       parsley-maxlength="50" parsley-required="true" parsley-type="email"/>
+                                <label>{% trans "Photo" %}</label>
+                                <label class="btn btn-default btn-file">
+                                    Browse<input type="file" id="photo" name="image" class="form-control" required="" style="display: none;"/>
+                                </label>
+                                <button type="submit" class="btn">{% trans "Update Photo" %}</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    <!-- end internal block -->
+</section>
+<!-- end new admin content -->
+{% endblock %}

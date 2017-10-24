@@ -1,0 +1,475 @@
+{% extends 'users/index.html' %}
+
+{% load staticfiles i18n bootstrap humanize chat_tags recruit_tags %}
+
+{% block extra_css %}
+<link href="{% static 'css/cropper.min.css' %}" rel="stylesheet">
+{% endblock %}
+
+{% block content %}
+<section id="internal-wrap">
+    <!-- internal block -->
+    <section id="account">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-7 text-center profile-navigation">
+                    {% if user != current_profile.user %}
+                        <div class="col-md-4 text-left">
+                            <span><strong>Last Person in contact:</strong> {{ last_person_in_contact.user.get_full_name }}</span>
+                        </div>
+                        <div class="col-md-4 text-left">
+                            <span><strong>Last Person added manual track to:</strong> {{ last_person_added_manual_track.get_full_name }}</span>
+                        </div>
+                    {% else %}
+                        <div class="col-md-4"></div>
+                        <div class="col-md-4"></div>
+                    {% endif %}
+                    <div class="col-md-4 text-right">
+                        {% get_user_conversation user current_profile.user as conversation %}
+                        <a href="{% url 'chat:chat' conversation.pk %}" class="message-agent {% if not current_profile_connection %}hidden{% endif %}">Message me</a>
+                    </div>
+                </div>
+                {% if user != current_profile.user %}
+                    <div class="col-md-4 text-center tracking-button-switcher">
+                        <button class="btn btn-secondary tracking-button btn-auto-tracking active">Auto Tracking</button>
+                        <button class="btn btn-secondary tracking-button btn-manual-tracking">Manual Tracking</button>
+                    </div>
+                {% endif %}
+            </div>
+            <div class="row">
+                <div class="col-md-7 profile-left">
+                    <div class="row">
+                        <div class="col-md-4 text-center">
+                            <span class="hidden authenticated-user">{{ user.pk }}</span>
+                            <span class="hidden company-owner">{{ company.owner.pk }}</span>
+                            <span class="hidden current-profile-conversation">{{ conversation.pk }}</span>
+                            <span class="hidden current-profile-has-connection">{% if current_profile_connection %}1{% else %}0{% endif %}</span>
+                            <span class="hidden current-profile-has-connection-request">{% if current_profile_connection_request %}1{% else %}0{% endif %}</span>
+                            <h4 class="current-profile-name">{{ current_profile.user.get_full_name }}</h4>
+                            <img
+                                class="current-profile-photo"
+                                id="profile_photo"
+                                src="{% if current_profile.photo %}{{ current_profile.photo.url }}{% else %}{% static 'img/default_user.jpg' %}{% endif %}"
+                                data-user-pk="{{ current_profile.user.pk }}">
+                            <form action="{% url 'users:profile_photo_upload' %}" id="photo_upload_form" method="post" role="form" enctype="multipart/form-data">
+                                {% csrf_token %}
+                                <div class="photo-upload-inputs">
+                                    {{ photo_form }}
+                                </div>
+                                <button type="button" class="btn {% if user != current_profile.user %}hidden{% endif %}" id="photo_upload_btn" OnClick="javascript:void(0)">{% trans "Update Photo" %}</button>
+                            </form>
+                                <div class="col-md-12 text-center">
+                                    <form action="{% url 'recruit:connection_request_create' %}" method="POST">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="connectee" value="{{ current_profile.user.pk }}">
+                                        <input type="hidden" name="connection_type" value="{{ connection_request.CONNECTION_NETWORK }}">
+
+                                        {% if current_profile_connection %}
+                                            <button class="btn btn-primary btn-xs add-connection {% if user == current_profile.user %}hidden{% endif %}" disabled="disabled">Connected</button>
+                                        {% elif current_profile_connection_request %}
+                                            <button class="btn btn-primary btn-xs add-connection {% if user == current_profile.user %}hidden{% endif %}" disabled="disabled">Awaiting Network Approval</button>
+                                        {% else %}
+                                            <button class="btn btn-primary btn-xs add-connection {% if user == current_profile.user %}hidden{% endif %}">Add as Network</button>
+                                        {% endif %}
+                                    </form>
+                                </div>
+                        </div>
+                        <div class="col-md-8">
+                            <h4>{% trans 'Company' %}</h4>
+                            {% if not company %}
+                                <p>{% trans 'No company attached to account yet.' %}</p>
+                            {% else %}
+                            {% if company.logo %}<img src="{{ company.logo.url }}" style="width:100%; margin-bottom:10px;">{% endif %}
+                                <div class="agent_profile__company_details">
+                                    <span>{{ company.name }}</span>
+                                    {% if company.address_1 %}<span>{{ company.address_1 }}</span>{% endif %}
+                                    {% if company.address_2 %}<span>{{ company.address_2 }}</span>{% endif %}
+                                    {% if company.zip and company.city %}<span>{{ company.zip }} {{ company.city }}</span>{% endif %}
+                                    {% if company.country %}<span>{{ company.country.name }}</span>{% endif %}
+                                    {% if company.website %}<span><a href="{{ company.website }}">{{ company.website }}</a></span>{% endif %}
+                                    {% if company.overview %}<hr>
+                                    <span>{{ company.overview }}</span>
+                                    {% endif %}
+                                    <hr>
+                                    <span>Main contact: {{ company.owner.get_full_name }}</span>
+                                </div>
+                                <div class="text-center">
+                                    {% for profile in company.profiles.all %}
+                                        {% if profile != current_profile %}
+                                            {% get_user_conversation user profile.user as conversation %}
+                                            <img
+                                                class="agent_photo company-staff-photo"
+                                                src="{% if profile.photo %}{{ profile.photo.url }}{% else %}{% static 'img/default_user.jpg' %}{% endif %}"
+                                                data-toggle="tooltip"
+                                                data-placement="top"
+                                                title="{{ profile.user.get_full_name }}"
+                                                data-user-pk="{{ profile.user.pk }}"
+                                                data-conversation-pk="{{ conversation.pk }}"
+                                                data-has-connection="{% if user|has_connection:profile.user %}1{% else %}0{% endif %}"
+                                                data-has-connection-request="{% if user|has_connection_request:profile.user %}1{% else %}0{% endif %}">
+                                        {% endif %}
+                                    {% endfor %}
+                                </div>
+
+                                <div class="manage-company {% if company.owner != user %}hidden{% endif %}">
+                                    <a href="{% url 'companies:company_update' %}" class="btn action-btn"><i class="glyphicon glyphicon-briefcase"></i> {% trans 'Update Company Profile' %}</a>
+                                    <a href="{% url 'companies:company_invite' %}" class="btn action-btn"><i class="glyphicon glyphicon-user"></i> {% trans "Add User" %}</a>
+                                    <div>
+                                        <h4>{% trans "Invitation Requests" %}</h4>
+                                        <div class="invitation-request-row">
+                                            {% for invitation_request in invitation_requests %}
+                                                <div class="invitation-request-item">
+                                                    <div class="text-left pull-left">
+                                                        <span class="request-users">{{ invitation_request.user.get_full_name }}</span>
+                                                    </div>
+                                                    <div class="text-right pull-right">
+                                                        <button class="btn btn-success btn-invitation-request" data-action="accept" data-uuid="{{ invitation_request.uuid }}">Accept</button>
+                                                        <button class="btn btn-danger btn-invitation-request" data-action="reject" data-uuid="{{ invitation_request.uuid }}">Reject</button>
+                                                    </div>
+                                                </div>
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% if user != current_profile.user %}
+                    {% include "users/snippets/tracking.html" with profile=current_profile %}
+                {% endif %}
+            </div>
+        </div>
+    </section>
+    <!-- end internal block -->
+</section>
+<!-- end new admin content -->
+
+<!-- MODAL TO CROP THE IMAGE -->
+<div class="modal fade" id="modalCrop">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+          <h4 class="modal-title">Crop the photo</h4>
+        </div>
+        <div class="modal-body">
+          <img src="" id="image" style="max-width: 100%;">
+        </div>
+        <div class="modal-footer">
+          <div class="btn-group pull-left" role="group">
+            <button type="button" class="btn btn-default js-zoom-in">
+              <span class="glyphicon glyphicon-zoom-in"></span>
+            </button>
+            <button type="button" class="btn btn-default js-zoom-out">
+              <span class="glyphicon glyphicon-zoom-out"></span>
+            </button>
+          </div>
+          <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+          <button type="button" class="btn btn-primary js-crop-and-upload">Upload</button>
+        </div>
+      </div>
+    </div>
+</div>
+
+<div class="modal fade connect-with-members-modal" tabindex="-1" role="dialog" aria-labelledby="connect-with-members-modal">
+    <div class="modal-dialog modal-sm" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title" id="myModalLabel">Connect with members</h4>
+            </div>
+            <div class="modal-body text-center">
+                Click <a class="btn btn-primary btn-xs" href="{% url 'users:agent_search' %}">here</a> to connect with members.
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block footer_js %}
+<script src="{% static 'js/jquery.form.min.js' %}"></script>
+<script src="{% static 'js/cropper.min.js' %}" type="text/javascript"></script>
+<script src="{% static 'js/profile_tracking.js' %}" type="text/javascript"></script>
+<script type="text/javascript">
+    $('.add-connection').on("click", function(event) {
+        event.preventDefault()
+        var candidateId = $(this).attr('data-candidate-id');
+        var form = $(this).closest('form');
+        var connection_type = form.find('input[name=connection_type]').val();
+
+        $.ajax({
+            context: this,
+            type: 'POST',
+            url: form.attr('action'),
+            data: form.serialize(),
+            dataType: "json",
+            success: function(response) {
+                if (response.success) {
+                    if (connection_type == 1)
+                        var button_text = 'Awaiting Network Approval'
+
+                    $(this).attr('disabled', 'disabled');
+                    $(this).html('Awaiting Network Approval');
+                    $('.current-profile-has-connection-request').html(1);
+                }
+                else {
+                    $.each(response.errors, function(key, value){
+                        alert(value);
+                    })
+                }
+            }
+        });
+    });
+
+    $('.company-staff-photo').on('click', function(){
+        var current_profile = $('.current-profile-photo');
+        var current_profile_photo = current_profile.attr('src');
+        var current_user_pk = current_profile.attr('data-user-pk');
+        var current_profile_name = $('.current-profile-name').html();
+        var current_profile_conversation_pk = $('.current-profile-conversation').html();
+        var current_profile_has_connection = $('.current-profile-has-connection').html();
+        var current_profile_has_connection_request = $('.current-profile-has-connection-request').html();
+
+        var company_staff_photo = $(this).attr('src');
+        var company_staff_pk = $(this).attr('data-user-pk');
+        var company_staff_name = $(this).attr('data-original-title');
+        var company_staff_conversation_pk = $(this).attr('data-conversation-pk');
+        var company_staff_has_connection = $(this).attr('data-has-connection');
+        var company_staff_has_connection_request = $(this).attr('data-has-connection-request');
+
+        current_profile.attr('src', company_staff_photo);
+        current_profile.attr('data-user-pk', company_staff_pk);
+        $('.current-profile-name').html(company_staff_name);
+        $('.current-profile-conversation').html(company_staff_conversation_pk);
+        $('.current-profile-has-connection').html(company_staff_has_connection);
+        $('.current-profile-has-connection-request').html(company_staff_has_connection_request);
+        $('input[name=connectee]').val(company_staff_pk);
+        if (company_staff_has_connection == 1) {
+            $('.add-connection').attr('disabled', 'disabled');
+            $('.add-connection').html('Connected');
+            $('.message-agent').removeClass('hidden');
+        }
+        else if (company_staff_has_connection_request == 1) {
+            $('.add-connection').attr('disabled', 'disabled');
+            $('.add-connection').html('Awaiting Network Approval');
+            $('.message-agent').addClass('hidden');
+        }
+        else {
+            $('.add-connection').removeAttr('disabled');
+            $('.add-connection').html('Add as Network');
+            $('.message-agent').addClass('hidden');
+        }
+        $('.message-agent').attr('href', Urls['chat:chat'](company_staff_conversation_pk));
+
+        $(this).attr('src', current_profile_photo);
+        $(this).attr('data-user-pk', current_user_pk);
+        $(this).attr('data-original-title', current_profile_name);
+        $(this).attr('data-has-connection', current_profile_has_connection);
+        $(this).attr('data-has-connection-request', current_profile_has_connection_request);
+        $(this).tooltip('hide');
+
+        if ($('.authenticated-user').html() == company_staff_pk) {
+            $('#photo_upload_btn').removeClass('hidden')
+            $('.add-connection').addClass('hidden')
+        }
+        else {
+            $('#photo_upload_btn').addClass('hidden')
+            $('.add-connection').removeClass('hidden')
+        }
+
+        $('#id_note_to').val(company_staff_pk);
+        $.ajax({
+            type: 'GET',
+            url: Urls['users:tracking'](company_staff_pk),
+            dataType: 'json',
+            success: function(response) {
+                // auto tracking
+                $('.tracking-first-contact-sent').html(response.data.auto_tracking.first_contact_sent);
+                $('.tracking-last-message-sent').html(response.data.auto_tracking.last_message_sent);
+                $('.tracking-last-received-sent').html(response.data.auto_tracking.last_message_received);
+
+                // manual tracking
+                var html = '';
+                $.each(response.data.user_notes, function(key, value) {
+                    var type = '';
+                    if (value.type == 1)
+                        type = '<i class="glyphicon glyphicon-phone"></i>';
+                    else if (value.type == 2)
+                        type = '<i class="glyphicon glyphicon-earphone"></i>';
+                    else if (value.type == 3)
+                        type = '<i class="glyphicon glyphicon-envelope"></i>';
+
+                    var text_type = '<i class="glyphicon glyphicon-phone note-type';
+                    var call_type = '<i class="glyphicon glyphicon-earphone note-type';
+                    var mail_type = '<i class="glyphicon glyphicon-envelope note-type';
+
+                    if (value.type == 1)
+                        text_type += ' active';
+                    else if (value.type == 2)
+                        call_type += ' active';
+                    else if (value.type == 3)
+                        mail_type += ' active';
+
+                    text_type += '" data-type="1"></i> &nbsp;';
+                    call_type += '" data-type="2"></i> &nbsp;';
+                    mail_type += '" data-type="3"></i>';
+
+                    html +=
+                        '<div class="row note-history-item">\
+                            <div class="note-history-item-details">\
+                                <div class="row">\
+                                    <div class="col-md-9">\
+                                        <span class="note-history-timestamp">' + value.created_at.proper + ' <strong>' + value.created_at.timeago + '</strong></span>\
+                                    </div>\
+                                    <div class="col-md-3 text-right">\
+                                        <span class="note-history-timestamp">\
+                                            <i class="glyphicon glyphicon-pencil btn-action-note-history btn-edit-note"></i>\
+                                            <i class="glyphicon glyphicon-remove btn-action-note-history btn-delete-note orange-text" data-user-note-pk=' + value.pk + '></i>\
+                                        </span>\
+                                    </div>\
+                                </div>\
+                                <div class="row note-item-text">\
+                                    <div class="col-md-1 user-note-type-icon">\
+                                        ' + type + '\
+                                    </div>\
+                                    <div class="col-md-11 user-note-text">\
+                                        ' + value.text + '\
+                                    </div>\
+                                </div>\
+                            </div>\
+                            <form action="' + Urls['users:user_note_update'](value.pk) + '" method="POST" class="edit-note-form hidden">\
+                                <input type="hidden" name="csrfmiddlewaretoken" value="' + value.csrf_token + '">\
+                                <input type="hidden" name="note_to" id="id_note_to" value="' + value.note_to.pk + '">\
+                                <div class="form-group">\
+                                    <label class="control-label" for="id_text">Notes:</label>\
+                                    <div class=" ">\
+                                        <textarea type="text" name="text" class="form-control" required="" id="id_text">' + value.text + '</textarea>\
+                                    </div>\
+                                    <div class="text_error error orange-text"></div>\
+                                </div>\
+                                <div class="note-type-field">\
+                                    <div class="col-md-6">\
+                                        <input type="hidden" name="type" id="id_type" value="' + value.type + '">\
+                                        <label class="control-label" for="id_type">Insert:</label> &nbsp;\
+                                        '+ text_type + '\
+                                        '+ call_type + '\
+                                        '+ mail_type + '\
+                                        <div class="type_error error orange-text"></div>\
+                                    </div>\
+                                    <div class="col-md-6 text-right">\
+                                        <button class="btn btn-primary btn-save-edit-note">Save</button>\
+                                    </div>\
+                                </div>\
+                            </form>\
+                        </div>';
+                });
+
+                $('.note-history').html(html);
+            }
+        });
+    });
+
+    function updateCandidateCV(responseText, statusText, xhr, $form){
+        if(responseText['success'] == true){
+            $('#cv_updated').fadeIn().delay(500).fadeOut();
+            document.getElementById("current_cv").href = responseText['cv'];
+        }else{
+            console.log(responseText);
+        }
+    }
+    $("#cv_upload_btn").on("click", function() {
+        $("#cv_upload").trigger("click");
+    });
+    $("#photo_upload_btn").on("click", function() {
+        $("#photo_upload").trigger("click");
+    });
+    $("#cv_upload").change(function(){
+        $("#cv_upload_form").ajaxSubmit({success:updateCandidateCV});
+    });
+
+    $('.btn-invitation-request').on("click", function() {
+        var uuid = $(this).attr('data-uuid');
+        var action = $(this).attr('data-action');
+
+        $.ajax({
+            context: this,
+            type: 'POST',
+            url: Urls['companies:company_invitation_request'](uuid),
+            data: {
+                action: action,
+            },
+            dataType: "json",
+            success: function(response) {
+                $(this).closest('.invitation-request-item').remove();
+            }
+        });
+    });
+
+    var $image = $("#image");
+    var cropBoxData;
+    var canvasData;
+    $("#modalCrop").on("shown.bs.modal", function () {
+        $image.cropper({
+            viewMode: 1,
+            aspectRatio: 1/1,
+            minCropBoxWidth: 200,
+            minCropBoxHeight: 200,
+            ready: function () {
+                $image.cropper("setCanvasData", canvasData);
+                $image.cropper("setCropBoxData", cropBoxData);
+            }
+        });
+    }).on("hidden.bs.modal", function () {
+        cropBoxData = $image.cropper("getCropBoxData");
+        canvasData = $image.cropper("getCanvasData");
+        $image.cropper("destroy");
+    });
+
+    $(".js-zoom-in").click(function () {
+        $image.cropper("zoom", 0.1);
+    });
+
+    $(".js-zoom-out").click(function () {
+        $image.cropper("zoom", -0.1);
+    });
+
+    /* SCRIPT TO COLLECT THE DATA AND POST TO THE SERVER */
+    $(".js-crop-and-upload").click(function () {
+        var cropData = $image.cropper("getData");
+        $("#id_x").val(cropData["x"]);
+        $("#id_y").val(cropData["y"]);
+        $("#id_height").val(cropData["height"]);
+        $("#id_width").val(cropData["width"]);
+        $("#modalCrop").modal("hide");
+        $("#photo_upload_form").ajaxSubmit({
+            beforeSubmit: function (arr, $form, options) {
+                $("#profile_photo").attr('src', '/static/img/loader.gif');
+            },
+            success: function (response) {
+                if (response.success) {
+                    $("#profile_photo").attr('src', response.image);
+                    $('.alert').remove()
+
+                    if (!response.has_connections)
+                        $('.connect-with-members-modal').modal('show');
+                }
+            }
+        });
+    });
+
+    /* SCRIPT TO OPEN THE MODAL WITH THE PREVIEW */
+    $("#photo_upload").change(function () {
+      if (this.files && this.files[0]) {
+          var reader = new FileReader();
+          reader.onload = function (e) {
+              $("#image").attr("src", e.target.result);
+              $("#modalCrop").modal("show");
+          }
+          reader.readAsDataURL(this.files[0]);
+      }
+    });
+</script>
+{% endblock %}

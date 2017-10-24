@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+
+{% load staticfiles i18n %}
+{% load render_bundle from webpack_loader %}
+
+{% block extra_css %}
+{{ block.super }}
+{% if not DEBUG %}
+    {% render_bundle 'chat-vendor' 'css' %}
+    {% render_bundle 'chat' 'css' %}
+{% endif %}
+{% endblock %}
+
+{% block content %}
+<div id='app'></div>
+{% endblock %}
+
+{% block footer %}
+{% endblock %}

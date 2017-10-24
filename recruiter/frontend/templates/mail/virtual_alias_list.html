@@ -1,0 +1,89 @@
+{% extends 'base.html' %}
+{% load staticfiles i18n %}
+{% load render_bundle from webpack_loader %}
+
+{% block content %}
+<div class="alerts-app-container">
+    <div class="alert-container">
+        <div class="alert-category-list-container">
+            <div style="position: relative; overflow: hidden; width: 100%; height: 100%;">
+                <div style="position: absolute; top: 0px; left: 0px; right: 0px; bottom: 0px; overflow: scroll; margin-right: -15px; margin-bottom: -15px;">
+                    <div class="alert-list">
+                        <div class="alert-list-header">
+                            <a class="alert-button alert-list-button button-messages" href="{% url 'chat:chat' %}">Messages</a><a href="{% url 'mail:alert_list' %}" class="alert-button alert-list-button button-alerts">Alerts</a><a class="alert-button alert-list-button button-settings active" href="#">Settings</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="alerts-inner-column">
+            <div class="aliases-box">
+                <h3>{% trans 'Added Alerts' %}</h3>
+                <hr /><br />
+                {% if virtual_aliases %}
+
+                    <table id="aliases" cellspacing="20">
+                        <tr>
+                            <th>{% trans 'Name' %}</th>
+                            <th>{% trans 'Website' %}</th>
+                            <th colspan="2">{% trans 'Email' %}</th>
+                        </tr>
+                        {% for alias in virtual_aliases %}
+                            <tr>
+                                <td colspan="4"><br /></td>
+                            </tr>
+                            <tr>
+                                <td width="130">{{ alias.name }}</td>
+                                <td width="200">{{ alias.site }}</td>
+                                <td width="100">{{ alias.source }}</td>
+                                <td style="padding-left:50px;font-size:13px;"><a href="{% url 'mail:virtual_alias_delete' alias.id %}">{% trans "Delete" %}</a></td>
+                              </tr>
+                        {% endfor %}
+                    </table>
+                {% else %}
+                    <p style="padding:10px;">{% trans 'No Alerts added ...' %}</p>
+                {% endif %}
+
+                <br /><br /><br />
+                <h3>{% trans 'Create New Alert' %} </h3>
+                <hr />
+                <br />
+                <form action="" method="POST">
+                    {% csrf_token %}
+                    <br />
+                    <div class="fieldWrapper">
+                        <table id="add-alias">
+                            <tr>
+                                <td width="75">{% trans 'Name:' %}</td>
+                                <td>{{ form.name }}</td>
+                            </tr>
+                            <tr>
+                                <td colspan="2" class="alias_form_error">{{ form.name.errors }}</td>
+                            </tr>
+                            <tr>
+                                <td>{% trans 'Website:' %}</td>
+                                <td>{{ form.site }}</td>
+                            </tr>
+                            <tr>
+                                <td colspan="2" class="alias_form_error">{{ form.site.errors }}</td>
+                            </tr>
+                            <tr>
+                                <td>{% trans 'Email:' %}</td>
+                                <td>{{ form.source }}</td>
+                                <td>&nbsp;<strong><span class="mail_dot">.</span>&nbsp;{{ user.username }}&nbsp;@&nbsp;squareballoon.com</strong></td>
+                            </tr>
+                            <tr>
+                                <td colspan="2" class="alias_form_error">{{ form.source.errors }}</td>
+                            </tr>
+                            <tr>
+                                <td></td>
+                                <td style="padding: 15px 0 0 130px;"><input type="submit" class="btn" value="Submit"></td>
+                            </tr>
+                        </table>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

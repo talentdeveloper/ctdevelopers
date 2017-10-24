@@ -1,0 +1,15 @@
+[Unit]
+Description=Nginx proxy server
+Requires=docker.service
+After=docker.service network.target
+
+[Service]
+TimeoutStartSec=0
+ExecStartPre=-/usr/bin/docker kill nginx-proxy
+ExecStartPre=-/usr/bin/docker rm nginx-proxy
+ExecStartPre=/usr/bin/docker pull jwilder/nginx-proxy:alpine
+ExecStart=/usr/bin/docker run -p 80:80 -p 443:443 --name nginx-proxy -v lets-encrypt-certificates:/etc/nginx/certs:ro -v nginx-vhost-config:/etc/nginx/vhost.d:ro -v /usr/share/nginx/html -v /var/run/docker.sock:/tmp/docker.sock:ro --label com.github.jrcs.letsencrypt_nginx_proxy_companion.nginx_proxy jwilder/nginx-proxy:alpine
+ExecStop=/usr/bin/docker stop nginx-proxy
+
+[Install]
+WantedBy=multi-user.target

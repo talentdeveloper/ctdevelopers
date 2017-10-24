@@ -1,0 +1,313 @@
+{% extends 'users/index.html' %}
+
+{% load staticfiles i18n bootstrap recruit_tags %}
+
+{% block content %}
+<section id="internal-wrap">
+    <!-- internal block -->
+        <div class="container">
+            {% if user.account_type == user.ACCOUNT_CANDIDATE %}
+                <ol class="breadcrumb">
+                    <li><a href="{% url 'recruit:dashboard' %}">Activity Feed</a></li>
+                    <li class="active">Find job positions</li>
+                    <li><a href="{% url 'users:candidate_search' %}">Search Candidates</a></li>
+                    <li><a href="{% url 'users:agent_search' %}">Search Agents</a></li>
+                    <li><a href="{% url 'recruit:application' %}">My Application</a></li>
+                </ol>
+            {% elif user.account_type == user.ACCOUNT_AGENT %}
+                <ol class="breadcrumb">
+                    <li><a href="{% url 'recruit:dashboard' %}">Activity Feed</a></li>
+                    <li class="active">Search Candidates</li>
+                    <li><a href="{% url 'users:agent_search' %}">Search Agents</a></li>
+                    <li><a href="{% url 'recruit:job_post_list' %}">Job Postings</a></li>
+                </ol>
+            {% endif %}
+            <div class="row" style="padding-top:40px;">
+                <div class="col-md-2">
+                    <h3>Filters</h3>
+                    <div class="row">
+                        <div class="col-md-12">
+                            <h4>Skills</h4>
+                            {% for skill in skills %}
+                                {% if skill.name in filters %}
+                                    <div>{{ skill.name }}</div>
+                                {% else %}
+                                    <a href="#" class="add-filter">{{ skill.name }}</a>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-12">
+                            <h4>Country</h4>
+                            {% for country in countries %}
+                                {% if country in filters %}
+                                    <div>{{ country }}</div>
+                                {% else %}
+                                    <a href="#" class="add-filter">{{ country }}</a>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-12">
+                            <h4>City</h4>
+                            {% for city in cities %}
+                                {% if city in filters %}
+                                    <div>{{ city }}</div>
+                                {% else %}
+                                    <a href="#" class="add-filter">{{ city }}</a>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-10 text-center">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <form class="search-form" action="{% url 'recruit:search' %}" method="GET">
+                                <div class="search_block">
+                                    <input type="text" placeholder="Search..." name="search" value="{{ search|default_if_none:'' }}"/>
+                                    <input type="hidden" name="filters" value="{% if filters %}{{ filters|join:',' }}{% endif %}"/>
+                                    <button class="btn search-btn" type="submit" value="Search"><i class="glyphicon glyphicon-search"></i> Search</button>
+                                </div>
+                                <div>
+                                    <div class="search-filters">
+                                        {% for item in filters %}
+                                            <span class="filter-item"><span class="filter-text">{{ item }}</span> <i class="glyphicon glyphicon-remove remove-filter"></i></span>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                        <div class="col-md-12 search_results">
+                            {% for result in results %}
+                                {% if user.account_type == user.ACCOUNT_CANDIDATE %}
+                                    <div class="search_job_post col-md-6">
+                                        <div class="col-md-4">
+                                            <img class="search-company-image" src="{% if result.posted_by.company.logo %}{{ result.posted_by.company.logo.url }}{% else %}{% static 'img/default_logo.png' %}{% endif %}">
+                                            <div class="job-posted-by pull-right">
+                                                <span class="search-info">{{ result.created_at|date }}</span>
+                                                <span class="search-info"><strong>Posted By:</strong></span>
+                                                <a href="{% url 'companies:company_detail' result.posted_by.company.slug %}?profile={{ result.posted_by.pk }}">
+                                                    <img src="{% if result.posted_by.photo %}{{ result.posted_by.photo.url }}{% else %}{% static 'img/default_user.jpg' %}{% endif %}" style="width:20px; border-radius:50%">
+                                                    <span>{{ result.posted_by.user.get_full_name }}</span>
+                                                </a>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-8 text-left">
+                                            <span class="search-info"><a href="{% url 'recruit:job_post_detail' result.uuid %}">{{ result.title }}</a></span>
+                                            <span class="search-info">{{ result.posted_by.company.name }}</span>
+                                            <span class="search-info">{{ result.city }}, {{ result.country.name }}</span>
+                                            <div class="job-post-skills search-info">
+                                                {% for skill in result.skills.all %}
+                                                    <span class="skill">{{ skill.name }}</span>
+                                                {% endfor %}
+                                            </div>
+                                        </div>
+                                        <div class="col-md-8 text-right" style="margin-top: 40px;">
+                                            {% if user.candidate in result.applicants %}
+                                                <button class="btn btn-primary btn-apply-job" data-job-post-uuid="{{ result.uuid }}" data-candidate-pk="{{ user.candidate.pk }}" disabled="disabled">Applied</button>
+                                            {% else %}
+                                                <button class="btn btn-primary btn-apply-job" data-job-post-uuid="{{ result.uuid }}" data-candidate-pk="{{ user.candidate.pk }}">Apply</button>
+                                            {% endif %}
+                                            <button class="btn btn-primary btn-refer-team-member-modal" data-toggle="modal" data-target="#refer_team_member_modal" data-job-post-pk="{{ result.pk }}">Refer to team member</button>
+                                        </div>
+                                    </div>
+                                {% elif user.account_type == user.ACCOUNT_AGENT %}
+                                    <div class="search_job_post col-md-6">
+                                        <div class="col-md-4">
+                                            <img src="{% if result.photo %}{{ result.photo.url }}{% else %}{% static 'img/default_user.jpg' %}{% endif %}" style="width:100px; border-radius:50%">
+                                        </div>
+                                        <div class="col-md-8 text-left">
+                                            <span class="search-info"><a href="{% url 'users:candidate_profile' result.user.slug %}">{{ result.user.get_full_name }}</a></span>
+                                            <span class="search-info">{{ result.user.email }}</span>
+                                            <span class="search-info">{{ result.phone }}</span>
+                                            <span class="search-info">{{ result.location|default_if_none:"" }}</span>
+                                            <span class="search-info">{{ result.title|default_if_none:"" }}</span>
+                                            <div class="job-post-skills search-info">
+                                                {% for skill in result.skills.all %}
+                                                    <span class="skill">{{ skill.name }}</span>
+                                                {% endfor %}
+                                            </div>
+                                            <div class="search-info connection-buttons">
+                                                {% with user|connections:result.user as connections %}
+                                                    {% if connections %}
+                                                        {% if connections.connection_type == connection.CONNECTION_NETWORK %}
+                                                            <button class="btn btn-primary btn-xs add-connection" disabled="disabled">Connected as Network</button>
+                                                        {% endif %}
+                                                    {% else %}
+                                                        {% if result.user.pk in result.user|connection_requests:connection_request.CONNECTION_NETWORK %}
+                                                            <button class="btn btn-primary btn-xs add-connection" disabled="disabled">Awating Network Approval</button>
+                                                        {% else %}
+                                                            <form action="{% url 'recruit:connection_request_create' %}" method="POST">
+                                                                {% csrf_token %}
+                                                                <input type="hidden" name="connectee" value="{{ result.user.pk }}">
+                                                                <input type="hidden" name="connection_type" value="{{ connection_request.CONNECTION_NETWORK }}">
+
+                                                                <button class="btn btn-primary btn-xs add-connection">Add to my network</button>
+                                                            </form>
+                                                        {% endif %}
+                                                    {% endif %}
+                                                {% endwith %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                {% endif %}
+                            {% empty %}
+                                <p>No results matching your criteria found.</p>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    <!-- end internal block -->
+</section>
+
+<div class="modal fade" id="refer_team_member_modal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title" id="myModalLabel">Refer to a team member</h4>
+      </div>
+      <form class="job-referral-form" action="{% url 'recruit:job_referral_create' %}" method="POST">
+          <div class="modal-body">
+            <div class="row">
+                {% csrf_token %}
+                <div class="refer-success text-center"></div>
+                <input id="id_job_post" type="hidden" name="job_post">
+                <div class="form-group">
+                    <label class="control-label" for="id_refer_to">Refer to</label>
+                    <select name="refer_to" class="form-control" id="id_refer_to" multiple>
+                        {% for key, value in job_referral_form.refer_to.field.choices %}
+                            <option value="{{ key }}">{{ value }}</option>
+                        {% endfor %}
+                    </select>
+                    <div class="refer_to_error error"></div>
+                </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+            <button type="submit" class="btn btn-primary btn-send-referral">Send Referral</button>
+          </div>
+     </form>
+    </div>
+  </div>
+</div>
+<!-- end new admin content -->
+{% endblock %}
+
+{% block footer_js %}
+<script src="{% static 'js/jquery.form.min.js' %}"></script>
+<script type="text/javascript">
+    $('.add-connection').on("click", function(event) {
+        event.preventDefault()
+        var candidateId = $(this).attr('data-candidate-id');
+        var form = $(this).closest('form');
+
+        $.ajax({
+            context: this,
+            type: 'POST',
+            url: form.attr('action'),
+            data: form.serialize(),
+            dataType: "json",
+            success: function(response) {
+                if (response.success) {
+                    form.closest('.connection-buttons').before('<button class="btn btn-primary btn-xs add-connection" disabled="disabled">Awating Network Approval</button>');
+                    form.closest('.connection-buttons').remove();
+                }
+                else {
+                    $.each(response.errors, function(key, value){
+                        alert(value);
+                    })
+                }
+            }
+        });
+    });
+
+    $('.btn-refer-team-member-modal').on('click', function() {
+        var job_post_pk = $(this).attr('data-job-post-pk');
+        $('#id_job_post').val(job_post_pk);
+    })
+
+    $("#id_refer_to").select2({
+        tags: true,
+    })
+    $('.select2-container').attr('style', 'width:500px');
+
+    $('.add-filter').on("click", function(event) {
+        event.preventDefault();
+        var add_filter = $(this).html();
+        var filter = $('input[name=filters]');
+
+        if (filter.val() == '')
+            filter.val(add_filter);
+        else
+            filter.val(filter.val() + ',' + add_filter);
+
+        $('.search-form').submit();
+    });
+
+    $('.remove-filter').on("click", function(event) {
+        event.preventDefault();
+        $(this).parent().remove();
+
+        var filters = [];
+        $('.filter-item').each(function(key, value){
+            filters.push($(this).find('.filter-text').html());
+        })
+        $('input[name=filters]').val(filters.join(','));
+
+        $('.search-form').submit();
+    });
+
+    $('.btn-send-referral').on('click', function(event) {
+        event.preventDefault();
+        $(".reffer-success").html('');
+        $(".error").html('');
+        $(".job-referral-form").ajaxSubmit({
+            success: function (response) {
+                if (response.success) {
+                    $(".refer-success").html('Referral Sent.');
+                }
+                else {
+                    $.each(response.errors, function(key, value){
+                        var form_error = key + '_error';
+                        $('.' + form_error).html(value);
+                    });
+                }
+            }
+        });
+    });
+
+    $('.btn-apply-job').on('click', function(event) {
+        event.preventDefault()
+        var job_post_uuid = $(this).attr('data-job-post-uuid');
+        var candidate_pk = $(this).attr('data-candidate-pk');
+
+        $.ajax({
+            context: this,
+            type: 'POST',
+            url: Urls['recruit:job_application'](job_post_uuid),
+            data: {
+                candidate: candidate_pk,
+            },
+            dataType: "json",
+            success: function(response) {
+                if (response.success) {
+                    $(this).attr('disabled', 'disabled');
+                    $(this).html('Applied');
+                }
+                else {
+                    $.each(response.errors, function(key, value){
+                        alert(value);
+                    })
+                }
+            }
+        });
+    });
+</script>
+{% endblock footer_js %}

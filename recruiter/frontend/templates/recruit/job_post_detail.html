@@ -1,0 +1,51 @@
+{% extends 'users/index.html' %}
+
+{% load staticfiles i18n bootstrap %}
+
+{% block content %}
+<section id="internal-wrap">
+    <!-- internal block -->
+    <section id="job-posts">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-10 col-md-offset-2">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="text-center">
+                                <h1>{{ job_post.title }}</h1>
+                                {% if request.user.account_type == request.user.ACCOUNT_AGENT %}
+                                    <a href="{% url 'recruit:job_post_update' job_post.uuid %}" class="btn btn-default">Edit</a>
+                                    <a href="{% url 'recruit:job_post_delete' job_post.uuid %}" class="btn btn-danger">Delete</a>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-md-12 job-post-detail-section">
+                            <div class="row job-post-detail text-center">
+                                <img class="search-company-image" src="{% if job_post.posted_by.company.logo %}{{ job_post.posted_by.company.logo.url }}{% else %}{% static 'img/default_logo.png' %}{% endif %}">
+                                <h4>{{ job_post.posted_by.company.name }}</h4>
+                                <h5>{{ job_post.city }}, {{ job_post.country.name }}</h5>
+                                <p>{{ job_post.description }}</p>
+                                <p>{{ job_post.contract }}</p>
+                                <div class="job-post-skills">
+                                    {% for skill in job_post.skills.all %}
+                                        <span class="skill">{{ skill.name }}</span>
+                                    {% endfor %}
+                                </div>
+                                <h6>{{ job_post.created_at|date }}</h6>
+                                <div class="job-posted-by pull-right">
+                                    <a href="{% url 'companies:company_detail' job_post.posted_by.company.slug %}?profile={{ job_post.posted_by.pk }}">
+                                        <span>{{ job_post.posted_by.user.get_full_name }}</span>
+                                        <img src="{% if job_post.posted_by.photo %}{{ job_post.posted_by.photo.url }}{% else %}{% static 'img/default_user.jpg' %}{% endif %}" style="width:30px; border-radius:50%">
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    <!-- end internal block -->
+</section>
+<!-- end new admin content -->
+{% endblock %}

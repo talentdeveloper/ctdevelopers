@@ -1,0 +1,111 @@
+{% extends 'users/index.html' %}
+
+{% load staticfiles i18n recruit_tags %}
+
+{% block content %}
+<section id="internal-wrap">
+    <!-- internal block -->
+    <div class="container">
+        {% if user.account_type == user.ACCOUNT_AGENT %}
+            <ol class="breadcrumb">
+                <li><a href="{% url 'recruit:dashboard' %}">Activity Feed</a></li>
+                <li><a href="{% url 'recruit:search' %}">Search Candidates</a></li>
+                <li class="active">Search Agents</li>
+                <li><a href="{% url 'recruit:job_post_list' %}">Job Postings</a></li>
+            </ol>
+        {% elif user.account_type == user.ACCOUNT_CANDIDATE %}
+            <ol class="breadcrumb">
+                <li><a href="{% url 'recruit:dashboard' %}">Activity Feed</a></li>
+                <li><a href="{% url 'recruit:search' %}">Find job positions</a></li>
+                <li><a href="{% url 'users:candidate_search' %}">Search Candidates</a></li>
+                <li class="active">Search Agents</li>
+                <li><a href="{% url 'recruit:application' %}">My Application</a></li>
+            </ol>
+        {% endif %}
+        <div class="row">
+            <div class="col-md-12 text-center">
+                <a href="{% url 'recruit:connection_invite_create' %}?connection_type={{ connection_request.CONNECTION_NETWORK }}&account_type={{ user.ACCOUNT_AGENT }}" class="btn btn-primary">Invite as network</a>
+            </div>
+        </div>
+        <div class="row" style="padding-top:40px;">
+            <div class="col-md-12 text-center">
+                <div class="row">
+                    <div class="col-md-12">
+                        <form class="search-form" action="{% url 'users:agent_search' %}" method="GET">
+                            <div class="search_block">
+                                <input type="text" placeholder="Search..." name="search" value="{{ search|default_if_none:'' }}"/>
+                                <button class="btn search-btn" type="submit" value="Search"><i class="glyphicon glyphicon-search"></i> Search</button>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="col-md-12 search_candidates">
+                        {% for agent in agents %}
+                            <div class="search_job_post col-md-4">
+                                <div class="col-md-4">
+                                    <img src="{% if agent.photo %}{{ agent.photo.url }}{% else %}{% static 'img/default_user.jpg' %}{% endif %}" style="width:70px; border-radius:50%">
+                                </div>
+                                <div class="col-md-8 text-left">
+                                    <span class="search-info">{{ agent.user.get_full_name }}</span>
+                                    <div class="connection-buttons">
+                                        {% with user|connections:agent.user as connections %}
+                                            {% if connections %}
+                                                <button class="btn btn-primary btn-xs add-connection" disabled="disabled">Connected as Network</button>
+                                            {% else %}
+                                                {% if agent.user.pk in network_connection_requests %}
+                                                    <button class="btn btn-primary btn-xs add-connection" disabled="disabled">Awating Network Approval</button>
+                                                {% else %}
+                                                    <form action="{% url 'recruit:connection_request_create' %}" method="POST">
+                                                        {% csrf_token %}
+                                                        <input type="hidden" name="connectee" value="{{ agent.user.pk }}">
+                                                        <input type="hidden" name="connection_type" value="{{ connection_request.CONNECTION_NETWORK }}">
+
+                                                        <button class="btn btn-primary btn-xs add-connection">Add to my network</button>
+                                                    </form>
+                                                {% endif %}
+                                            {% endif %}
+                                        {% endwith %}
+                                    </div>
+                                </div>
+                            </div>
+                        {% empty %}
+                            <p>No results matching your criteria found.</p>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- end internal block -->
+</section>
+<!-- end new admin content -->
+{% endblock %}
+
+{% block footer_js %}
+<script src="{% static 'js/jquery.form.min.js' %}"></script>
+<script type="text/javascript">
+    $('.add-connection').on("click", function(event) {
+        event.preventDefault()
+        var candidateId = $(this).attr('data-candidate-id');
+        var form = $(this).closest('form');
+
+        $.ajax({
+            context: this,
+            type: 'POST',
+            url: form.attr('action'),
+            data: form.serialize(),
+            dataType: "json",
+            success: function(response) {
+                if (response.success) {
+                    form.closest('.connection-buttons').before('<button class="btn btn-primary btn-xs add-connection" disabled="disabled">Awating Network Approval</button>');
+                    form.closest('.connection-buttons').remove();
+                }
+                else {
+                    $.each(response.errors, function(key, value){
+                        alert(value);
+                    })
+                }
+            }
+        });
+    });
+</script>
+{% endblock footer_js %}

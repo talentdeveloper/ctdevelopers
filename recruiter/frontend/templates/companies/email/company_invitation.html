@@ -1,0 +1,15 @@
+{% load i18n %}
+
+Hello,<br>
+<br>
+You received this email because {{ company_invitation.inviter.user.get_ful_name }} invited<br>
+you to join {{ company_invitation.inviter.company.name }} on SquareBalloon.<br>
+<br>
+To accept invitation, please signup here:<br>
+<a href="{{ current_site }}{% url 'account_signup' %}?invite_type=company&account_type={{ company_invitation.inviter.account_type }}&uuid={{ company_invitation.uuid }}&email={{ company_invitation.invitee_email }}&company_type={{ company_invitation.inviter.profile.company.company_type }}">
+    {{ current_site }}{% url 'account_signup' %}?invite_type=company&account_type={{ company_invitation.inviter.account_type }}&uuid={{ company_invitation.uuid }}&email={{ company_invitation.invitee_email }}&company_type={{ company_invitation.inviter.profile.company.company_type }}
+</a><br>
+After that you will be able added to the company, {{ company_invitation.inviter.profile.company.name }}.<br>
+<br>
+With best regards,<br>
+SquareBalloon.com

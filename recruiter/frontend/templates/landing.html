@@ -1,0 +1,122 @@
+{% extends 'base_v2.html' %}
+
+{% load staticfiles i18n %}
+
+{% block nav %}{% endblock nav %}
+
+{% block messages %}{% endblock messages %}
+
+{% block content %}
+<!-- Start Landing Page Section -->
+<section class="landing" id="landing">
+    <div class="landing__steps">
+        <ul>
+            <li><a href="#">1</a></li>
+            <li><a class="black" href="#">2</a></li>
+            <li><a href="#">3</a></li>
+            <li><a class="active" href="#">4</a></li>
+            <li><a href="#">5</a></li>
+            <li><a href="#">6</a></li>
+            <li><a href="#">7</a></li>
+            <li><a href="#">8</a></li>
+            <li><a class="black" href="#">9</a></li>
+            <li><a href="#">10</a></li>
+        </ul>
+    </div>
+    <div class="landing__wrapper">
+        <div class="landing__content">
+            <div class="container-fluid">
+                <div class="row">
+                    <div class="col-md-2 col-lg-3">
+                    </div>
+                    <div class="col-md-8 col-lg-6">
+                        <div class="landing__authentication">
+                            {% if user.is_anonymous %}
+                                <button class="landing__register">
+                                    <img src="{% static "img/register.png" %}" alt="register">{% trans "Register" %}
+                                    <img class="landing__register-arrow" src="{% static "img/register-arrow.png" %}" alt="img">
+                                    <span class="landing__register-sub">
+                                        <a href="{% url 'account_signup' %}?account_type=1"><img src="{% static "img/register-2.png" %}" alt="img">{% trans "IT Professionals" %}</a>
+                                        <a href="{% url 'account_signup' %}?account_type=2"><img src="{% static "img/register-1.png" %}" alt="img">{% trans "Recruitment Agencies" %}</a>
+                                    </span>
+                                </button>
+                                <a class="landing__login" href="{% url 'account_login' %}">
+                                    <img src="{% static "img/locked-padlock.png" %}" alt="img">{% trans "Login" %}
+                                </a>
+                            {% else %}
+                                <a class="landing__login" href="{% url 'recruit:dashboard' %}">
+                                    {% trans "My Dashboard" %}
+                                </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="container">
+                <div class="row">
+                    <div class="col-md-12">
+                        <!--  -->
+                        <div class="landing__main">
+                            <div class="landing__titles">
+                                <h2><strong>{% trans "The" %}</strong> {% trans "Business Network" %}</h2>
+                                <h2 class="second-line">{% trans "For" %} <strong>{% trans "IT" %}</strong></h2>
+                                <h2 class="colored">{% trans "Professionals" %}</h2>
+                            </div>
+                            <div class="landing__download">
+                                <ul>
+                                    <li>
+                                        <a href="#">
+                                            <img src="{% static "img/download-apple.png" %}" alt="img">
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <span>
+                                            {% trans "OR" %}
+                                        </span>
+                                    </li>
+                                    <li>
+                                        <a href="#">
+                                            <img src="{% static "img/download-google.png" %}" alt="img">
+                                        </a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                        <!--  -->
+                    </div>
+                    <div class="col-sm-6 col-md-2 col-lg-2">
+                        <div class="landing__footer-2">
+                            <ul>
+                                <li>
+                                    <a href="#">{% trans "About Us" %}</a>
+                                </li>
+                                <li>
+                                    <a href="#">{% trans "Help & Support" %}</a>
+                                </li>
+                                <li>
+                                    <a href="#">{% trans "Contact Us" %}</a>
+                                </li>
+                                <li>
+                                    <a href="#">{% trans "Terms of Service" %}</a>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="col-sm-6 col-md-3 col-lg-3">
+                        <div class="landing__footer-3">
+                            <ul>
+                                <li><a href="#"><img src="{% static "img/facebook-logo.png" %}" alt="img"></a></li>
+                                <li><a href="#"><img src="{% static "img/twitter.png" %}" alt="img"></a></li>
+                                <li><a href="#"><img src="{% static "img/instagram-social-network-logo-of-photo-camera1.png" %}" alt="img"></a></li>
+                                <li><a href="#"><img src="{% static "img/linkedin-logo.png" %}" alt="img"></a></li>
+                            </ul>
+                        </div>
+                    </div>
+                    <!--  -->
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<!-- End Landing Page Section -->
+{% endblock %}

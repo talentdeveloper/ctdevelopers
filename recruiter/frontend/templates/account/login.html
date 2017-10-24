@@ -1,0 +1,50 @@
+{% extends "account/base.html" %}
+
+{% load i18n bootstrap account socialaccount widget_tweaks %}
+
+{% block head_title %}{% trans "Log In" %}{% endblock %}
+
+{% block nav %}{% endblock nav %}
+
+{% block content %}
+<section id="landing" class="auth">
+    <div class="container login">
+        <div class="row">
+            <div class="col-sm-offset-3 col-md-offset-3 col-sm-6 col-md-6">
+                <div class="registraton-form">
+                    <div class="register-form">
+                        <a href="{% url 'recruit:home' %}"><span class="pull-right"><i class="glyphicon glyphicon-remove"></i></span></a>
+                        <form id="login-form" action="{% url 'account_login' %}" method="post" role="form">
+                            {% csrf_token %}
+                            {% if redirect_field_value %}
+                                <input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}" />
+                            {% endif %}
+                            <h1 class="text-center">{% trans "Login" %}</h1>
+
+                            {{ form.login|attr:"placeholder:Email"|add_class:"email" }}
+                            {{ form.login.errors }}
+
+                            {{ form.password|attr:"placeholder:Password"|add_class:"pass" }}
+                            {{ form.password.errors }}
+
+                            <div class="register-form__submit">
+                                <button type="submit">{% trans "Login" %}</button>
+                            </div>
+
+                            <div class="text-center">
+                                <p>{% trans "Don't have an account?" %}</p>
+                                <p>{% trans "Signup as an" %} <a href="{% url 'account_signup' %}?account_type=1">{% trans "IT Professional" %}</a> {% trans "or" %} <a href="{% url 'account_signup' %}?account_type=2">{% trans "Recruitment Agency." %}</a></p>
+                                <p><a href="{% url 'account_reset_password' %}">{% trans "Forgot Password?" %}</a><p>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block footer %}
+
+{% endblock footer %}

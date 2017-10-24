@@ -1,0 +1,37 @@
+{% load staticfiles %}
+
+<div class="connection-request-card col-md-4">
+    {% for connection_user in connection.users %}
+        {% if connection_user != user %}
+            {% if connection_user.account_type == user.ACCOUNT_AGENT or connection_user.account_type == user.ACCOUNT_SUPPORT %}
+                <div class="col-md-4">
+                    <img src="{% if connection_user.profile.photo %}{{ connection_user.profile.photo.url }}{% else %}{% static 'img/default_user.jpg' %}{% endif %}" style="width:70px; border-radius:50%">
+                    <span class="search-info">{{ connection_user.get_account_type_display }}</span>
+                </div>
+                <div class="col-md-8 text-left">
+                    <span class="search-info">{{ connection.get_connection_type_display }}</span>
+                    <span class="search-info"><a href="{% url 'companies:company_detail' connection_user.profile.company.slug %}?profile={{ connection_user.profile.pk }}">{{ connection_user.get_full_name }}</a></span>
+                    <span class="search-info">{{ connection_user.profile.company.name|default_if_none:"" }}</span>
+                    <span class="search-info">{{ connection_user.profile.company.location|default_if_none:"" }}</span>
+                    {% if user.account_type == user.ACCOUNT_CANDIDATE and connection_user.account_type == user.ACCOUNT_AGENT %}
+                        <button class="btn btn-primary btn-refer-candidate-to-agent-modal" data-toggle="modal" data-target="#refer_candidate_to_agent_modal" data-user-pk="{{ connection_user.pk }}">Refer to a candidate</button>
+                    {% endif %}
+                </div>
+            {% elif connection_user.account_type == user.ACCOUNT_CANDIDATE %}
+                <div class="col-md-4">
+                    <img src="{% if connection_user.candidate.photo %}{{ connection_user.candidate.photo.url }}{% else %}{% static 'img/default_user.jpg' %}{% endif %}" style="width:70px; border-radius:50%">
+                    <span class="search-info">{{ connection_user.get_account_type_display }}</span>
+                </div>
+                <div class="col-md-8 text-left">
+                    <span class="search-info">{{ connection.get_connection_type_display }}</span>
+                    <span class="search-info"><a href="{% url 'users:candidate_profile' connection_user.slug %}">{{ connection_user.get_full_name }}</a></span>
+                    <span class="search-info">{{ connection_user.candidate.title|default_if_none:"" }}</span>
+                    <span class="search-info">{{ connection_user.candidate.location|default_if_none:"" }}</span>
+                    {% if user.account_type == user.ACCOUNT_CANDIDATE %}
+                        <button class="btn btn-primary btn-refer-agent-to-candidate-modal" data-toggle="modal" data-target="#refer_agent_to_candidate_modal" data-user-pk="{{ connection_user.pk }}">Refer to an agent</button>
+                    {% endif %}
+                </div>
+            {% endif %}
+        {% endif %}
+    {% endfor %}
+</div>

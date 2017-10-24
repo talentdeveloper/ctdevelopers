@@ -1,0 +1,86 @@
+{% extends 'users/index.html' %}
+
+{% load staticfiles i18n bootstrap %}
+
+{% block content %}
+<section id="internal-wrap">
+    <!-- internal block -->
+    <section id="account">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-7 col-md-offset-1 profile-left">
+                    <div class="row">
+                        <div class="col-md-4 text-left">
+                            <h4>{{ request.user.get_full_name }}</h4>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-12 profile-update">
+                            <h5 style="margin:20px 0px;">{% trans 'Company update' %}</h5>
+                            <form action="{% url 'companies:company_update' %}" method="POST" enctype="multipart/form-data">
+                                {% csrf_token %}
+                                {{ form|bootstrap }}
+                                <div class="form-group">
+                                    <button type="submit" class="btn btn-primary btn-lg">{% trans 'Save' %}</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 profile-right">
+                    <h4>{% trans 'Your company' %}</h4>
+                    {% if company %}
+                    {% if company.logo %}<img src="{{ company.logo.url }}" style="width:100%; margin-bottom:10px;">{% endif %}
+                    <div class="agent_profile__company_details">
+                        <span>{{ company.name }}</span>
+                        {% if company.address_1 %}<span>{{ company.address_1 }}</span>{% endif %}
+                        {% if company.address_2 %}<span>{{ company.address_2 }}</span>{% endif %}
+                        {% if company.zip and company.city %}<span>{{ company.zip }} {{ company.city }}</span>{% endif %}
+                        {% if company.country %}<span>{{ company.country.name }}</span>{% endif %}
+                        {% if company.website %}<span><a href="{{ company.website }}">{{ company.website }}</a></span>{% endif %}
+                        {% if company.overview %}<hr>
+                        <span>{{ company.overview }}</span>
+                        {% endif %}
+                        <hr>
+                        <span>Main contact: {{ company.owner.get_full_name }}</span>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </section>
+    <!-- end internal block -->
+</section>
+<!-- end new admin content -->
+{% endblock %}
+
+{% block footer_js %}
+<script src="{% static 'js/jquery.form.min.js' %}"></script>
+<script>
+    function updateProfilePhoto(responseText, statusText, xhr, $form){
+        if(responseText['success'] == true){
+            document.getElementById("profile_photo").src = responseText['image'];
+        }
+    }
+    function updateCandidateCV(responseText, statusText, xhr, $form){
+        if(responseText['success'] == true){
+            $('#cv_updated').fadeIn().delay(500).fadeOut();
+            document.getElementById("current_cv").href = responseText['cv'];
+        }else{
+            console.log(responseText);
+        }
+    }
+    $("#cv_upload_btn").on("click", function() {
+        $("#cv_upload").trigger("click");
+    });
+    $("#photo_upload_btn").on("click", function() {
+        $("#photo_upload").trigger("click");
+    });
+    $("#photo_upload").change(function(){
+        $("#photo_upload_form").ajaxSubmit({success:updateProfilePhoto});
+    });
+    $("#cv_upload").change(function(){
+        $("#cv_upload_form").ajaxSubmit({success:updateCandidateCV});
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,96 @@
+{% extends 'users/index.html' %}
+
+{% load staticfiles i18n bootstrap humanize %}
+
+{% block content %}
+<section id="internal-wrap">
+    <!-- internal block -->
+    <section id="job-posts">
+        <div class="container">
+            <div class="row">
+                <ol class="breadcrumb">
+                    <li><a href="{% url 'recruit:dashboard' %}">Activity Feed</a></li>
+                    <li><a href="{% url 'recruit:search' %}">Search Candidates</a></li>
+                    <li><a href="{% url 'users:agent_search' %}">Search Agents</a></li>
+                    <li class="active">Job Postings</li>
+                </ol>
+            </div>
+            <div class="row">
+                <div class="col-md-6 text-left">
+                    <h2>Postings</h2>
+                </div>
+                <div class="col-md-3 text-right">
+                    <a href="{% url 'recruit:job_post_create' %}" class="btn btn-lg btn-primary margin-top-10">Post a New Job</a>
+                </div>
+                <div class="col-md-3 text-left">
+                    <a href="#" class="btn btn-lg btn-primary margin-top-10">Rehire a Candidate</a>
+                </div>
+            </div>
+            <div class="job-posts-table">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <td><strong>Job Title</strong></td>
+                            <td><strong>Proposals</strong></td>
+                            <td><strong>Messaged</strong></td>
+                            <td><strong>Offers/Hires</strong></td>
+                            <td><strong>Status</strong></td>
+                            <td></td>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for job_post in job_posts %}
+                            <tr>
+                                <td>
+                                    <span class="job-post-title"><a href="{% url 'recruit:job_post_detail' job_post.uuid %}">{{ job_post.title }}</a></span>
+                                    <span class="block">
+                                        Posted {{ job_post.created_at|naturaltime }} by
+                                        {% if job_post.posted_by == user.agent %}
+                                            You
+                                        {% else %}
+                                            <a href="{% url 'companies:company_detail' job_post.posted_by.company.slug %}?profile={{ job_post.posted_by.pk }}">{{ job_post.posted_by }}</a>
+                                        {% endif %}
+                                    </span>
+                                    <span class="block"><a href="#">View Suggested Candidates</a></span>
+                                </td>
+                                <td>
+                                    <a href="{% url 'recruit:job_application_list' job_post.uuid %}">
+                                        {{ job_post.candidate_applications.count }}
+                                        {% if job_post.new_applications %}
+                                            ({{ job_post.new_applications.count }} new)
+                                        {% endif %}
+                                    </a>
+                                </td>
+                                <td>2</td>
+                                <td>1</td>
+                                <td>Public</td>
+                                <td>
+                                    <div class="dropdown">
+                                        <button class="btn btn-default dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+                                            <i class="glyphicon glyphicon-option-horizontal"></i>
+                                        </button>
+                                        <ul class="dropdown-menu" aria-labelledby="dropdownMenu1">
+                                            <li><a href="{% url 'recruit:job_application_list' job_post.uuid %}">View Proposals</a></li>
+                                            <li><a href="#">Make Private</a></li>
+                                            <li><a href="{% url 'recruit:job_post_detail' job_post.uuid %}">View Job Posting</a></li>
+                                            <li><a href="{% url 'recruit:job_post_update' job_post.uuid %}">Edit Posting</a></li>
+                                            <li><a href="#">Duplicate Posting</a></li>
+                                            <li><a href="{% url 'recruit:job_post_delete' job_post.uuid %}">Remove Posting</a></li>
+                                        </ul>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% empty %}
+                            <tr class="text-center">
+                                <td colspan="5">No job posts yet.</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+    <!-- end internal block -->
+</section>
+<!-- end new admin content -->
+{% endblock %}

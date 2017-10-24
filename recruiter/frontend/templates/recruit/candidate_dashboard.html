@@ -1,0 +1,366 @@
+{% extends 'users/index.html' %}
+
+{% load staticfiles i18n %}
+
+{% block content %}
+<section id="internal-wrap">
+    <div class="container">
+        <div class="row">
+            <ol class="breadcrumb">
+                <li class="active">Activity Feed</li>
+                <li><a href="{% url 'recruit:search' %}">Find job positions</a></li>
+                <li><a href="{% url 'users:candidate_search' %}">Search Candidates</a></li>
+                <li><a href="{% url 'users:agent_search' %}">Search Agents</a></li>
+                <li><a href="{% url 'recruit:application' %}">My Application</a></li>
+            </ol>
+            <div class="col-md-12 text-center">
+                <div style="padding-top: 20px;">
+                    <ul class="nav nav-tabs" role="tablist">
+                        <li role="presentation" class="active">
+                            <a href="#activity-feed" aria-controls="activity-feed" role="tab" data-toggle="tab">Activity Feed</a>
+                        </li>
+                        <li role="presentation">
+                            <a href="#notifications" aria-controls="notifications" role="tab" data-toggle="tab">Notifications {% if connection_requests or cv_requests %}<span class="badge badge-new badge-notification"><span class="badge-notification-count">{{ connection_requests.count|add:cv_requests.count }}</span> New</span>{% endif %}</a>
+                        </li>
+                        <li role="presentation">
+                            <a href="#referrals" aria-controls="referrals" role="tab" data-toggle="tab">Referrals</a>
+                        </li>
+                        <li role="presentation">
+                            <a href="#connections" aria-controls="connections" role="tab" data-toggle="tab">Connections</a>
+                        </li>
+                    </ul>
+
+                    <div class="tab-content">
+                        <div role="tabpanel" class="tab-pane active" id="activity-feed">
+                            <h1>Job Referrals by Team Members</h1>
+                            <div class="row">
+                                {% for job_referral in job_referrals %}
+                                    <div class="item-card col-md-6">
+                                        <div class="col-md-4">
+                                            <img class="search-company-image" src="{% if job_referral.job_post.posted_by.company.logo %}{{ job_referral.job_post.posted_by.company.logo.url }}{% else %}{% static 'img/default_logo.png' %}{% endif %}">
+                                            <div class="job-posted-by pull-right">
+                                                <span class="search-info">{{ job_referral.job_post.created_at|date }}</span>
+                                                <span class="search-info"><strong>Posted By:</strong></span>
+                                                <a href="{% url 'companies:company_detail' job_referral.job_post.posted_by.company.slug %}?profile={{ job_referral.job_post.posted_by.pk }}">
+                                                    <img src="{% if job_referral.job_post.posted_by.photo %}{{ job_referral.job_post.posted_by.photo.url }}{% else %}{% static 'img/default_user.jpg' %}{% endif %}" style="width:20px; border-radius:50%">
+                                                    <span>{{ job_referral.job_post.posted_by.user.get_full_name }}</span>
+                                                </a>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-8 text-left">
+                                            <span class="search-info"><a href="{% url 'recruit:job_post_detail' job_referral.job_post.uuid %}">{{ job_referral.job_post.title }}</a></span>
+                                            <span class="search-info">{{ job_referral.job_post.posted_by.company.name }}</span>
+                                            <span class="search-info">{{ job_referral.job_post.city }}, {{ job_referral.job_post.country.name }}</span>
+                                            <div class="job-post-skills search-info">
+                                                {% for skill in job_referral.job_post.skills.all %}
+                                                    <span class="skill">{{ skill.name }}</span>
+                                                {% endfor %}
+                                            </div>
+                                        </div>
+                                        <div class="col-md-8 text-right" style="margin-top: 40px;">
+                                            <span class="search-info"><strong>Referred By:</strong></span>
+                                                <a href="{% url 'users:candidate_profile' job_referral.referred_by.user.slug %}">
+                                                    <img src="{% if job_referral.referred_by.photo %}{{ job_referral.referred_by.photo.url }}{% else %}{% static 'img/default_user.jpg' %}{% endif %}" style="width:20px; border-radius:50%">
+                                                    <span>{{ job_referral.referred_by.user.get_full_name }}</span>
+                                                </a>
+                                        </div>
+                                    </div>
+                                {% empty %}
+                                    <p>No referrals as of the moment.</p>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        <div role="tabpanel" class="tab-pane" id="notifications">
+                            <div class="row">
+                                <div class="col-md-8">
+                                    <h1>Connection Requests</h1>
+                                    <div class="row">
+                                        {% for connection_request in connection_requests %}
+                                            <div class="col-md-6">
+                                                {% include "recruit/snippets/connection_request_card.html" %}
+                                            </div>
+                                        {% empty %}
+                                            <p>No requests as of the moment.</p>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <h1>CV Requests</h1>
+                                    <div class="row">
+                                        {% for cv_request in cv_requests %}
+                                            <div class="col-md-12 cv-request-card">
+                                                <div class="col-md-4">
+                                                    {% if cv_request.requested_by.account_type == user.ACCOUNT_CANDIDATE %}
+                                                        <img src="{% if cv_request.requested_by.candidate.photo %}{{ cv_request.requested_by.candidate.photo.url }}{% else %}{% static 'img/default_user.jpg' %}{% endif %}" style="width:70px; border-radius:50%">
+                                                    {% elif cv_request.requested_by.account_type == user.ACCOUNT_AGENT %}
+                                                        <img src="{% if cv_request.requested_by.agent.photo %}{{ cv_request.requested_by.agent.photo.url }}{% else %}{% static 'img/default_user.jpg' %}{% endif %}" style="width:70px; border-radius:50%">
+                                                    {% endif %}
+                                                </div>
+                                                <div class="col-md-8 text-left">
+                                                    <span class="search-info">{{ cv_request.requested_by.get_full_name }}</span>
+                                                    <form action="{% url 'users:cv_request_update' cv_request.uuid %}" method="POST">
+                                                        {% csrf_token %}
+                                                        <button class="btn btn-primary btn-xs btn-cv-request" data-status="{{ cv_request.STATUS_APPROVED }}">Approve</button>
+                                                        <button class="btn btn-primary btn-xs btn-cv-request" data-status="{{ cv_request.STATUS_DECLINED }}">Decline</button>
+                                                    </form>
+                                                </div>
+                                            </div>
+                                        {% empty %}
+                                            <p>No requests as of the moment.</p>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div role="tabpanel" class="tab-pane" id="referrals">
+                            <div class="col-md-6">
+                                <h1>Candidates</h1>
+                                <div class="row">
+                                    {% for referral in candidate_referrals %}
+                                        <div class="connection-request-card col-md-8 col-md-offset-2">
+                                            <div class="col-md-4">
+                                                <img src="{% if referral.referred_user.candidate.photo %}{{ referral.referred_user.candidate.photo.url }}{% else %}{% static 'img/default_user.jpg' %}{% endif %}" style="width:70px; border-radius:50%">
+                                            </div>
+                                            <div class="col-md-8 text-left">
+                                            {% if referral.referred_user.account_type == user.ACCOUNT_CANDIDATE %}
+                                                <span class="search-info"><a href="{% url 'users:candidate_profile' referral.referred_user.slug %}">{{ referral.referred_user.get_full_name }}</a></span>
+                                            {% elif referral.referred_user.account_type == user.ACCOUNT_AGENT %}
+                                                <span class="search-info"><a href="{% url 'companies:company_detail' referral.referred_user.agent.company.slug %}?profile={{ referral.referred_user.agent.pk }}">{{ referral.referred_user.get_full_name }}</a></span>
+                                            {% endif %}
+                                                <span class="search-info">{{ referral.referred_user.candidate.title|default_if_none:"" }}</span>
+                                                <span class="search-info">{{ referral.referred_user.candidate.location|default_if_none:"" }}</span>
+                                                <span class="search-info">{{ referral.referred_user.candidate.location|default_if_none:"" }}</span>
+                                                <span class="search-info"><strong>Referred By:</strong></span>
+                                                <a href="{% url 'users:candidate_profile' referral.referred_by.slug %}">
+                                                    <img src="{% if referral.referred_by.candidate.photo %}{{ referral.referred_by.candidate.photo.url }}{% else %}{% static 'img/default_user.jpg' %}{% endif %}" style="width:20px; border-radius:50%">
+                                                    <span>{{ referral.referred_by.candidate.user.get_full_name }}</span>
+                                                </a>
+                                            </div>
+                                        </div>
+                                    {% empty %}
+                                        <p>No referrals as of the moment.</p>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <h1>Agents</h1>
+                                <div class="row">
+                                    {% for referral in agent_referrals %}
+                                        <div class="connection-request-card col-md-8 col-md-offset-2">
+                                            <div class="col-md-4">
+                                                <img src="{% if referral.referred_user.candidate.photo %}{{ referral.referred_user.candidate.photo.url }}{% else %}{% static 'img/default_user.jpg' %}{% endif %}" style="width:70px; border-radius:50%">
+                                            </div>
+                                            <div class="col-md-8 text-left">
+                                                {% if referral.referred_user.account_type == user.ACCOUNT_CANDIDATE %}
+                                                    <span class="search-info"><a href="{% url 'users:candidate_profile' referral.referred_user.slug %}">{{ referral.referred_user.get_full_name }}</a></span>
+                                                {% elif referral.referred_user.account_type == user.ACCOUNT_AGENT %}
+                                                    <span class="search-info"><a href="{% url 'companies:company_detail' referral.referred_user.agent.company.slug %}?profile={{ referral.referred_user.agent.pk }}">{{ referral.referred_user.get_full_name }}</a></span>
+                                                {% endif %}
+                                                <span class="search-info">{{ referral.referred_user.agent.company.name|default_if_none:"" }}</span>
+                                                <span class="search-info">{{ referral.referred_user.agent.company.location|default_if_none:"" }}</span>
+                                                <span class="search-info"><strong>Referred By:</strong></span>
+                                                <a href="{% url 'users:candidate_profile' referral.referred_by.slug %}">
+                                                    <img src="{% if referral.referred_by.candidate.photo %}{{ referral.referred_by.candidate.photo.url }}{% else %}{% static 'img/default_user.jpg' %}{% endif %}" style="width:20px; border-radius:50%">
+                                                    <span>{{ referral.referred_by.candidate.user.get_full_name }}</span>
+                                                </a>
+                                            </div>
+                                        </div>
+                                    {% empty %}
+                                        <p>No referrals as of the moment.</p>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                        <div role="tabpanel" class="tab-pane" id="connections">
+                            <div class="col-md-12">
+                                <div class="row">
+                                    {% for connection in connections %}
+                                        {% include "recruit/snippets/connection_card.html" %}
+                                    {% empty %}
+                                        <p>You have no connections yet.</p>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<div class="modal fade" id="refer_agent_to_candidate_modal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title" id="myModalLabel">Refer to an Agent</h4>
+      </div>
+      <form class="user-referral-form" action="{% url 'recruit:user_referral_create' %}" method="POST">
+          <div class="modal-body">
+            <div class="row">
+                {% csrf_token %}
+                <div class="refer-success text-center"></div>
+                <input id="id_referred_user" type="hidden" name="referred_user">
+                <div class="form-group">
+                    <label class="control-label" for="id_refer_to">Refer to</label>
+                    <select name="refer_to" class="form-control" id="id_refer_to" multiple>
+                        {% for connection in connections %}
+                            {% for connection_user in connection.users %}
+                                {% if connection_user != user and connection_user.account_type == connection_user.ACCOUNT_AGENT %}
+                                    <option value="{{ connection_user.pk }}">{{ connection_user.get_full_name }}</option>
+                                {% endif %}
+                            {% endfor %}
+                        {% endfor %}
+                    </select>
+                    <div class="refer_to_error error"></div>
+                </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+            <button type="submit" class="btn btn-primary btn-send-referral">Send Referral</button>
+          </div>
+     </form>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="refer_candidate_to_agent_modal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title" id="myModalLabel">Refer to a Candidate</h4>
+      </div>
+      <form class="user-referral-form" action="{% url 'recruit:user_referral_create' %}" method="POST">
+          <div class="modal-body">
+            <div class="row">
+                {% csrf_token %}
+                <div class="refer-success text-center"></div>
+                <input id="id_referred_user" type="hidden" name="referred_user">
+                <div class="form-group">
+                    <label class="control-label" for="id_refer_to">Refer to</label>
+                    <select name="refer_to" class="form-control" id="id_refer_to" multiple>
+                        {% for connection in connections %}
+                            {% for connection_user in connection.users %}
+                                {% if connection_user != user and connection_user.account_type == connection_user.ACCOUNT_CANDIDATE %}
+                                    <option value="{{ connection_user.pk }}">{{ connection_user.get_full_name }}</option>
+                                {% endif %}
+                            {% endfor %}
+                        {% endfor %}
+                    </select>
+                    <div class="refer_to_error error"></div>
+                </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+            <button type="submit" class="btn btn-primary btn-send-referral">Send Referral</button>
+          </div>
+     </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block footer_js %}
+<script src="{% static 'js/jquery.form.min.js' %}"></script>
+<script type="text/javascript">
+    $('.btn-refer-agent-to-candidate-modal').on('click', function() {
+        var user_pk = $(this).attr('data-user-pk');
+        $('#refer_agent_to_candidate_modal').find('#id_referred_user').val(user_pk);
+    })
+
+    $('.btn-refer-candidate-to-agent-modal').on('click', function() {
+        var user_pk = $(this).attr('data-user-pk');
+        $('#refer_candidate_to_agent_modal').find('#id_referred_user').val(user_pk);
+    })
+
+    $("select[name='refer_to']").select2({
+        tags: true,
+    })
+    $('.select2-container').attr('style', 'width:500px');
+
+    $('.btn-send-referral').on('click', function(event) {
+        event.preventDefault();
+        $(".reffer-success").html('');
+        $(".error").html('');
+        $(this).closest(".user-referral-form").ajaxSubmit({
+            success: function (response) {
+                if (response.success) {
+                    $(".refer-success").html('Referral Sent.');
+                }
+                else {
+                    $.each(response.errors, function(key, value){
+                        var form_error = key + '_error';
+                        $('.' + form_error).html(value);
+                    });
+                }
+            }
+        });
+    });
+
+    $('.btn-connection-request').on("click", function() {
+        var uuid = $(this).attr('data-uuid');
+        var action = $(this).attr('data-action');
+
+        $.ajax({
+            context: this,
+            type: 'POST',
+            url: Urls['recruit:connection_request_delete'](uuid),
+            data: {
+                action: action,
+            },
+            dataType: "json",
+            success: function(response) {
+                var count = $('.badge-notification-count').html();
+                if (count == 1) {
+                    $('.badge-notification').remove();
+                }
+                else {
+                    $('.badge-notification-count').html(count - 1);
+                }
+                var row = $(this).closest('.row');
+                if (row.find('.connection-request-card').length == 1)
+                    row.html('<p>No requests as of the moment.</p>')
+
+                $(this).closest('.connection-request-card').parent().remove();
+            }
+        });
+    });
+
+    $('.btn-cv-request').on("click", function(e) {
+        e.preventDefault();
+        var form = $(this).closest('form');
+        var uuid = $(this).attr('data-uuid');
+        var status = $(this).attr('data-status');
+        var csrf = form.find('input[name=csrfmiddlewaretoken]').val();
+
+        $.ajax({
+            context: this,
+            type: form.attr('method'),
+            url: form.attr('action'),
+            data: {
+                status: status,
+                csrfmiddlewaretoken: csrf,
+            },
+            dataType: "json",
+            success: function(response) {
+                var count = $('.badge-notification-count').html();
+                if (count == 1) {
+                    $('.badge-notification').remove();
+                }
+                else {
+                    $('.badge-notification-count').html(count - 1);
+                }
+                var row = $(this).closest('.row');
+                if (row.find('.cv-request-card').length == 1)
+                    row.html('<p>No requests as of the moment.</p>')
+
+                $(this).closest('.cv-request-card').remove();
+            }
+        });
+    });
+</script>
+{% endblock footer_js %}

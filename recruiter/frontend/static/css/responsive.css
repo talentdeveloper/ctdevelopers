@@ -1,0 +1,72 @@
+@media (min-width:767px) {
+    .navbar-header .logo {
+        padding: 10px 0 0;
+    }
+}
+@media (min-width: 992px) {
+    .navbar .container {
+        width: 90%;
+    }
+    .vcenter {
+        display: flex;
+        align-items: center;
+    }
+    section#cart .col-md-offset-1.order {
+        margin-left: 3.33333333%;
+    }
+    section#cart .col-md-1.order {
+        width: 8.33333333%;
+    }
+    section#cart .col-md-2 {
+        width: 23.66666667%;
+    }
+
+}
+@media (max-width: 992px) {
+    .modal_form.wide {
+        min-width: 100%;
+        padding: 0;
+    }
+    section#how-works .row hr {
+        display: none;
+    }
+    nav .container {
+        width: 100%;
+    }
+
+    .navbar-right {
+        background-color: #ffffff;
+        padding-bottom: 10px;
+        border-radius: 8px;
+    }
+    section#landing {
+        background: url(../img/traveling-with-a-backpack.png) 70% 0px no-repeat;
+        background-size: cover;
+        height: 100vh;
+        min-height: 800px;
+        width: 100%;
+    }
+    section#landing  .search{
+        height: 45vh;
+        border-radius: 8px;
+        background-color: rgba(0, 0, 0, 0.2);
+        width: 100%;
+        left: 0;
+        -webkit-transform: translateX(0%);
+        -ms-transform: translateX(0%);
+                transform: translateX(0%);
+        position: relative;
+        padding: 10px;
+        bottom: 0;
+    }
+    .fade-bg {
+        min-height: 800px;
+        margin: 0;
+    }
+    section#landing  .search p {
+        padding: 0 10px;
+    }
+    section#how-works .icons div {
+        padding-bottom: 80px;
+    }
+}

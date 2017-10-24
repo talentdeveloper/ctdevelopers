@@ -1,0 +1,15 @@
+[Unit]
+Description=Lets Encrypt service
+Requires=nginx-proxy.service
+After=nginx-proxy.service network.target
+
+[Service]
+TimeoutStartSec=0
+ExecStartPre=-/usr/bin/docker kill lets-encrypt
+ExecStartPre=-/usr/bin/docker rm lets-encrypt
+ExecStartPre=/usr/bin/docker pull jrcs/letsencrypt-nginx-proxy-companion
+ExecStart=/usr/bin/docker run --name lets-encrypt -v lets-encrypt-certificates:/etc/nginx/certs:rw -v nginx-vhost-config:/etc/nginx/vhost.d:rw --volumes-from nginx-proxy -v /var/run/docker.sock:/var/run/docker.sock:ro jrcs/letsencrypt-nginx-proxy-companion
+ExecStop=/usr/bin/docker stop lets-encrypt
+
+[Install]
+WantedBy=multi-user.target

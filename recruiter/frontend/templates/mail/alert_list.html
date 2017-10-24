@@ -1,0 +1,108 @@
+{% extends 'base.html' %}
+{% load el_pagination_tags %}
+{% load staticfiles i18n %}
+{% load render_bundle from webpack_loader %}
+
+{% block content %}
+<div class="alerts-app-container" style="border:0px solid red;position:relative;">
+    <div class="alert-container">
+        <div class="alert-category-list-container">
+            <div style="position: relative; overflow: hidden; width: 100%; height: 100%;">
+                <div style="position: absolute; top: 0px; left: 0px; right: 0px; bottom: 0px; overflow: scroll; margin-right: -15px; margin-bottom: -15px;">
+                    <div class="alert-list">
+                        <div class="alert-list-header">
+                            <a class="alert-button alert-list-button button-messages" href="{% url 'chat:chat' %}">Messages</a><a href="#" class="alert-button alert-list-button button-alerts active">Alerts</a><a class="alert-button alert-list-button button-settings" href="{% url 'mail:virtual_alias_list' %}">Settings</a>
+                        </div>
+                        <div class="alert-list-group">
+                            <h4 class="alert-header">{% trans 'Active Alerts' %}</h4>
+                            {% for alert_group in alerts_active %}
+                                <div class="alert-list-item">
+                                    <div class="alert-list-item-div">
+                                        <div class="alert-list-item-pane">
+                                            <div class="alert-list-item-pane-row">{{ alert_group.name }}</div>
+                                            <div class="alert-list-item-pane-row"><a href="{% url 'mail:alert_list' %}?alerts={{ alert_group.source }}">{{ alert_group.source }}</a></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% empty %}
+                                <h4 class="text-center">{% trans 'No alerts yet...' %}</h4>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="alerts-inner-column">
+            <div class="alert-list-container">
+                {% if aliases %}
+                    {% if no_msg %}
+                        <p style="padding:20px;">{% trans 'Message does not exist ...' %}</p>
+                    {% else %}
+                        {% if messages %}
+                          <iframe src="{% url 'mail:alert_detail' first_message.id %}" width="850" name="mail_iframe" id="mail_iframe" seamless="seamless" scrolling="no" frameborder="0"></iframe>
+                        {% else %}
+                        <p id="email-body" style="height:400px;">
+                            <span class="no-messages">{% trans 'No messages ...' %}</span>
+                        </p>
+                        {% endif %}
+                    {% endif %}
+                {% else %}
+                    <h2>{% trans 'No active job alerts were found, create a' %} <a href="{% url 'mail:virtual_alias_list' %}">{% trans 'new alert' %}</a>.</h2>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    <div class="alerts-incoming-list">
+        {% if request.GET.showfavourites %}
+            <a class="btn btn-default custom-hover" href="{% url 'mail:alert_list' %}" role="button">{% trans 'All' %}</a>
+            <a class="btn btn-default custom-hover favourites-active" href="" role="button">{% trans 'Favourites' %}</span></a>
+        {% else %}
+            <a class="btn btn-default custom-hover all-active" href="{% url 'mail:alert_list' %}" role="button">{% trans 'All' %}</a>
+            <a class="btn btn-default custom-hover" href="{% url 'mail:alert_list' %}?showfavourites=all" role="button">{% trans 'Favourites' %}</span></a>
+        {% endif %}
+
+        {% if request.GET.showfavourites and not messages %}
+            <p style="padding:20px;">{% trans 'No Favourites ...' %}</p>
+        {% endif %}
+        {% if messages %}
+            <br /><br /><br />
+              {% paginate 7 messages %}
+              <div id="email-alert-list">
+              {% for message in messages %}
+                  <a class="email-alert" id="message_{{ message.id }}" name="{{ message.id }}" href="{% url 'mail:alert_detail' message.id %}">
+                      <div class="email-alert">
+                          <p class="alerts-medium">{% trans 'From:' %} {{ message.from_contact_email }}</p>
+                          <p class="received alerts-medium">{% trans 'Received:' %} {{ message.message_date }}</p>
+                          <p class="alerts-medium">{% trans 'Subject:' %} {{ message.subject|truncatechars:28 }}</p>
+                          <p class="alerts-medium">{% trans 'To:' %} {{ message.to_field }}</p>
+                      </div>
+                  </a>
+                  <hr />
+              {% endfor %}
+            </div>
+              <div class="pagination">
+              {% show_pages %}
+              </div>
+        {% endif %}
+        {% if not messages and not request.GET.showfavourites %}
+            <p style="padding:20px;">{% trans 'No Incoming Alerts ...' %}</p>
+        {% endif %}
+    </div>
+</div><br /><br /><br /><br />
+{% endblock %}
+{% block footer_js %}
+<script type="text/javascript">
+$('.email-alert').click(function(e) {
+    e.preventDefault();
+    var href = e.currentTarget.getAttribute('href')
+    $('#mail_iframe').attr('src', href);
+});
+
+$('#mail_iframe').load(function (){
+      var iFrameID = document.getElementById('mail_iframe');
+      iFrameID.height = "";
+      iFrameID.height = iFrameID.contentWindow.document.body.scrollHeight + "px";
+  });
+
+</script>
+{% endblock footer_js %}

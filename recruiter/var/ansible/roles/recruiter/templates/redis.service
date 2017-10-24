@@ -1,0 +1,15 @@
+[Unit]
+Description=Redis server
+Requires=docker.service
+After=docker.service network.target
+
+[Service]
+TimeoutStartSec=0
+ExecStartPre=-/usr/bin/docker kill redis
+ExecStartPre=-/usr/bin/docker rm redis
+ExecStartPre=/usr/bin/docker pull redis:3.2-alpine
+ExecStart=/usr/bin/docker run --name redis redis:3.2-alpine
+ExecStop=/usr/bin/docker stop redis
+
+[Install]
+WantedBy=multi-user.target

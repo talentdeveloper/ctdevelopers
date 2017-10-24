@@ -1,0 +1,8 @@
+- name: Install docker
+  yum: name=docker state=present
+
+- name: Restart docker
+  service: name=docker state=restarted enabled=yes
+
+- name: Log into Docker registry
+  command: docker login -u jenkins -p ngmhhBqf4ji_cobfLzq4 squareballoon.com:5000

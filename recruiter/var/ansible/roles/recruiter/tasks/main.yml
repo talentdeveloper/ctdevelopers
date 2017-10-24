@@ -1,0 +1,34 @@
+- name: Copy systemd files
+  template: src={{ item }} dest=/etc/systemd/system/ owner=root group=root mode=644
+  with_fileglob:
+    - "templates/*.service"
+
+- name: Reload the systemd manager configuration
+  command: systemctl daemon-reload
+
+- name: Pull docker images
+  command: docker pull {{ item }}
+  with_items:
+    - jrcs/letsencrypt-nginx-proxy-companion
+    - jwilder/nginx-proxy:alpine
+    - redis:3.2-alpine
+    - postgres:9.6
+    - squareballoon.com:5000/recruiter:master
+
+- name: Start containers
+  service: name={{ item }} state=started enabled=yes
+  with_items:
+    - lets-encrypt
+    - nginx-proxy
+    - redis
+    - postgres
+
+- name: Check if postgres container is running
+  command: docker exec postgres true || false
+  register: postgres_is_running
+  until: postgres_is_running | success
+  retries: 5
+  delay: 5
+
+- name: Start recruiter container
+  service: name=recruiter state=started enabled=yes
