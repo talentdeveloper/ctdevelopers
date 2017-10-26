@@ -38,15 +38,7 @@ $ docker pull squareballoon.com:5000/recruiter
 $ sudo systemctl restart recruiter
 ```
 
-### Deploying on production server ###
 
-RHEL-based systems like CentOS
-
-```
-$ sudo yum install -y ansible
-$ git clone https://bitbucket.org/ctdevelopers/recruiter.git
-$ cd recruiter/var/ansible
-$ sudo ansible-playbook site.yml
 ```
 
 ### Running Tests ###
